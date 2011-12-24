@@ -1,0 +1,6 @@
+A list of things to add to Toader.
+
+-CGI app integration.
+-Gallery generation.
+-Automatic documentation generation/sidepar for found POD.
+-Automatic adding/removing of Toader files to a VCS.

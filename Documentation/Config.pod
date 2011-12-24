@@ -1,0 +1,16 @@
+=head1 Toader Config
+
+Toader uses Config::INI for storing some commonly
+used stuff variables that will be passed around/used
+which is then passed to any template stuff being rendered.
+
+The file that it is stored in is $toaderRoot.'/.toader/config.ini' .
+
+Below are the default values, in the main, '_', section, are
+filled out if not specified
+
+    site=hostname
+    owner=getlogin.'@'.hostname
+    last='25'
+
+=cut

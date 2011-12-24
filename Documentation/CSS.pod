@@ -1,0 +1,78 @@
+=head1 
+
+Toad uses CSS, by default, for the layout and various
+stying stuff.
+
+The default template is as below.
+
+    div{
+      border: 0px solid;
+      padding:2px;
+      width: 100%;
+     }
+    div#sidebar{
+      width: auto;
+      float:left;
+      border: 1px solid;
+     }
+    div#maincontent{
+      width: auto;
+      float:left;
+     }
+    div#location{
+      width: 100%;
+      border: 1px solid;
+     }
+    div#header{
+      width: 100%;
+      border: 1px solid;
+     }
+    div#content{
+      width: 100%;
+      border: 1px solid;
+     }
+    div#copyright{
+      width: auto;
+      text-align: center;
+     clear: left;
+    }
+    body{
+      background: black;
+      color: white;
+     }
+    a:link{
+      color: grey;
+     }
+    a:visited{
+      color: lightgreen;
+     }
+    a:hover{
+      color: green;
+     }
+    table#entryArchive{
+      border: 1px solid;
+     }
+    td#entryArchive{
+      border: 1px solid;
+     }
+    table#pageSummary{
+      border: 1px solid;
+     }
+    td#pageSummary{
+      border: 1px solid;
+     }
+
+=head1 RENDERING
+
+The first step is to pull the CSS template. First it will check
+$toaderRoot.'/.toader/css' exists and if it does it will use it and use
+that instead of the default.
+
+It is rendered to $outputDir.'/toader.css' .
+
+The variables below are passed to it when rendering the template.
+
+    c - This is the Config::Tiny object holding the Toader config.
+    toader - This is the Toader object.
+
+=cut
