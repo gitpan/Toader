@@ -11,15 +11,15 @@ use Toader::pathHelper;
 
 =head1 NAME
 
-Toader - This holds a blog/article/whatever entry.
+Toader::Entry - This holds a blog/article/whatever entry.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -1355,6 +1355,7 @@ Invalid publish value.
 =head1 AUTHOR
 
 Zane C. Bowers-Hadley, C<< <vvelox at vvelox.net> >>
+
 
 =head1 BUGS
 

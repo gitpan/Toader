@@ -9,15 +9,15 @@ use base 'Error::Helper';
 
 =head1 NAME
 
-Toader - Manage entries.
+Toader::Entry::Manage - Manage entries.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 
 =head1 SYNOPSIS
@@ -337,6 +337,7 @@ Generating a Toader::Entry object from a alredy existing entry failed.
 =head1 AUTHOR
 
 Zane C. Bowers-Hadley, C<< <vvelox at vvelox.net> >>
+
 
 =head1 BUGS
 

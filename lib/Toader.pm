@@ -17,11 +17,11 @@ Toader - A CMS meant to be integrated with a versioning system.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -382,6 +382,7 @@ Failed to initiate the path helper.
 =head1 AUTHOR
 
 Zane C. Bowers-Hadley, C<< <vvelox at vvelox.net> >>
+
 
 =head1 BUGS
 
