@@ -10,15 +10,15 @@ use Cwd 'abs_path';
 
 =head1 NAME
 
-Toader::pathHelper - 
+Toader::pathHelper - Various path related helpers.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -32,7 +32,7 @@ our $VERSION = '0.0.0';
 
 This initiates the object.
 
-One argument is taken. That is the a Toader directory.
+One argument is taken. That is the a L<Toader> directory.
 
     my $foo=Toader::pathHelper->new($toaderDir);
     if($foo->error){
@@ -123,10 +123,10 @@ sub atRoot{
 =head2 back2root
 
 This returns relative path from specified directory,
-back to the Toader root directory.
+back to the L<Toader> root directory.
 
 One argument is taken and that is the Toader directory
-under the root Toader directory.
+under the root L<Toader> directory.
 
 =cut
 
@@ -167,7 +167,7 @@ sub back2root{
 
 =head2 cleanup
 
-This cleans up the path for a Toader directory.
+This cleans up the path for a L<Toader> directory.
 
     my $cleandir=$foo->cleanup($dir);
     if($foo->error){
@@ -211,7 +211,7 @@ sub cleanup{
 
 This finds the relative path between two toader directories.
 
-Two arguments are accepted. Both are Toader directories. The first
+Two arguments are accepted. Both are L<Toader> directories. The first
 one is the directory to start in and the second is the directory
 to end in.
 
@@ -278,10 +278,10 @@ sub relative{
 
 =head2 relative2root
 
-This returns relative path from the root Toader directory.
+This returns relative path from the root L<Toader> directory.
 
-One argument is taken and that is the Toader directory
-under the root Toader directory.
+One argument is taken and that is the L<Toader> directory
+under the root L<Toader> directory.
 
 =cut
 
@@ -322,10 +322,10 @@ sub relative2root{
 
 =head2 underRoot
 
-This checks if a specified Toader directory is under the Toader root
+This checks if a specified L<Toader> directory is under the L<Toader> root
 directory.
 
-One argument is taken and that is a directory. This directory must be a Toader
+One argument is taken and that is a directory. This directory must be a L<Toader>
 directory.
 
 The returned value is a boolean value.
@@ -367,7 +367,7 @@ sub underRoot{
 
 =head2 underRootNT
 
-This checks if a specified directory is under the Toader root
+This checks if a specified directory is under the L<Toader> root
 directory. Unlike underRoot, no check is done on if it is a
 Toader directory or not.
 
@@ -423,11 +423,11 @@ No directory specified.
 
 =head2 2
 
-The directory is not a Toader directory.
+The directory is not a L<Toader> directory.
 
 =head2 3
 
-The Toader directory in question is not under the Toader
+The L<Toader> directory in question is not under the L<Toader>
 directory root it was initialized with.
 
 =head2 4
@@ -436,7 +436,7 @@ Unable to find the root.
 
 =head2 5
 
-The directory is not under the root Toader directory.
+The directory is not under the root L<Toader> directory.
 
 =head1 AUTHOR
 

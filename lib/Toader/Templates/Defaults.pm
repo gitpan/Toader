@@ -10,11 +10,11 @@ Toader::Templates::Defaults - This provides the default templates for Toader.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 =head1 SYNOPSIS
 
@@ -70,7 +70,10 @@ sub new{
 	$self->{templates}{'authorLink'}='<a href="mailto:[== $address ==]">[== $name ==]</a>';
 	$self->{templates}{'pageSummaryLink'}='<a href="[== $url ==]">[== $text ==]</a>';
 	$self->{templates}{'toRootLink'}='<a href="[== $url ==]">[== $text ==]</a>';
+	$self->{templates}{'autodocLink'}='<a href="[== $url ==]">[== $text ==]</a>';
+	$self->{templates}{'linkAutoDocList'}='<a href="[== $url ==]">[== $text ==]</a>';
 
+	$self->{templates}{'dirListBegin'}='';
 	$self->{templates}{'dirListEnd'}='';
 	$self->{templates}{'dirListJoin'}='<br>'."\n";
 	$self->{templates}{'dirListEnd'}='<br>'."\n";
@@ -83,23 +86,24 @@ sub new{
 	$self->{templates}{'entryListJoin'}='<br>'."\n";
 	$self->{templates}{'entryListEnd'}='<br>'."\n";
 
+	$self->{templates}{'authorBegin'}='';
 	$self->{templates}{'authorEnd'}='';
 	$self->{templates}{'authorJoin'}=", \n";
 	$self->{templates}{'authorEnd'}="\n";
 
 	$self->{templates}{'css'}='div{
   border: 0px solid;
-  padding:2px;
+  padding: 2px;
   width: 100%;
  }
 div#sidebar{
   width: auto;
-  float:left;
+  float: left;
   border: 1px solid;
  }
 div#maincontent{
   width: auto;
-  float:left;
+  float: none;
  }
 div#location{
   width: 100%;
@@ -172,17 +176,22 @@ td#pageSummary{
 		  }
 	      return "		<h3>Entries</h3>\n".
 		  "		".$g->entriesLink." <br>\n".
-		  "		".$g->entriesArchiveLink." <br>\n".
-		  "		<hr>\n";
+		  "		".$g->entriesArchiveLink." <br>\n";
 		==]
 		[==
 		  my $pages=$g->listPages;
 		  if ( ( ! defined( $pages ) ) || ( $pages eq "" ) ){
 		    return "";
 		  }
-		  return "		<h3>".$g->pageSummaryLink."</h3>\n".$pages."\n		<hr>\n";
+		  return "		<hr><h3>".$g->pageSummaryLink."</h3>\n".$pages."\n		<hr>\n";
 		==]
-		<h3>Directories</h3>
+		[==
+            if( $g->hasAnyDirs ){
+                return "<hr>\n<h3>Directories</h3>";
+            }else{
+                return "";
+            }
+        ==]
 		[== 
 			if ( $g->atRoot ){
 				return "";
@@ -191,7 +200,18 @@ td#pageSummary{
 			       $g->upOneDirLink."		<br>\n		<br>";
 		==]
 
-		[== $g->listDirs ==]
+		[== 
+            if ( $g->hasSubDirs ){
+                return $g->listDirs;
+            }
+            return "";
+        ==]
+       [==
+           if ( $g->hasDocs ){
+               return "<hr>".$g->adListLink;
+           }
+           return "";
+       ==]
 	  </div>
 
 	  <div id="maincontent" >
@@ -233,7 +253,6 @@ td#pageSummary{
 	$self->{templates}{'entryIndex'}='[== $g->lastEntries( $c->{_}->{last} ) ==]';
 
 	$self->{templates}{'entryArchive'}='[== $g->entryArchive ==]';
-
 	$self->{templates}{'entryArchiveBegin'}='<table id="entryArchive">
   <tr> <td>Date</td> <td>Title</td> <td>Summary</td> </tr>
 ';
@@ -265,6 +284,17 @@ td#pageSummary{
 ';
 
 	$self->{templates}{'top'}='<h1>[== $c->{_}->{site} ==]</h1><br>';
+
+    $self->{templates}{'autodocContent'}='[== $g->autodocList ==]';
+    $self->{templates}{'autodocListBegin'}='<table id="autodocList">
+  <tr> <td>File</td> </tr>
+';
+    $self->{templates}{'autodocListRow'}='  <tr id="autodocList">
+    <td id="autodocList">[== $g->adlink( $dir, $file ) ==]</td>
+  </tr>
+';
+    $self->{templates}{'autodocListJoin'}='';
+    $self->{templates}{'autodocListEnd'}='</table>';
 
 	return $self;
 }

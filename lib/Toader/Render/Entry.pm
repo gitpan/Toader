@@ -16,11 +16,11 @@ Toader::Render::Entry - This renders a Toader::Entry object.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -34,11 +34,11 @@ This initiates the object.
 
 =head4 obj
 
-This is the Toader::Entry object to render.
+This is the L<Toader::Entry> object to render.
 
 =head4 toader
 
-This is the Toader object to use.
+This is the L<Toader> object to use.
 
 =head2 toDir
 
@@ -214,19 +214,10 @@ sub content{
 	my ($sec,$min,$hour,$day,$month,$year,$zone) = strptime($date);
 	$year=1900+$year;
 
-	#make sure everything is double digits
-	if( $sec < 10 ){
-		$sec='0'.$sec;
-	}
-    if( $min < 10 ){
-        $min='0'.$min;
-    }
-    if( $hour < 10 ){
-        $hour='0'.$hour;
-    }
     if( $day < 10 ){
         $day='0'.$day;
     }
+	$month++;
     if( $month < 10 ){
         $month='0'.$month;
     }
@@ -679,23 +670,23 @@ sub render{
 
 =head2 1
 
-No Toader::Entry object specified.
+No L<Toader::Entry> object specified.
 
 =head2 2
 
-No Toader object specified.
+No L<Toader> object specified.
 
 =head2 3
 
-The Toader::Entry object has a permanent error set.
+The L<Toader::Entry> object has a permanent error set.
 
 =head2 4
 
-The Toader object has a permanent error set.
+The L<Toader> object has a permanent error set.
 
 =head2 5
 
-The Toader::Entry object does not have a directory set
+The L<Toader::Entry> object does not have a directory set
 
 =head2 6
 
@@ -735,7 +726,7 @@ The output file directory could not be created.
 
 =head2 15
 
-Failed to initialize the Toader::General::Object.
+Failed to initialize the L<Toader::General::Object>.
 
 =head1 AUTHOR
 

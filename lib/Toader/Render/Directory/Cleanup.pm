@@ -11,12 +11,11 @@ Toader::Render::Directory::Cleanup - This is used for cleaning up the output dir
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
-
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -26,7 +25,7 @@ our $VERSION = '0.0.0';
 
 This initiates the object.
 
-One argument is required and it is a Toader object.
+One argument is required and it is a L<Toader> object.
 
 	my $foo=Toader::Render::Directory::Cleanup->new($toader);
     if($foo->error){
@@ -105,8 +104,8 @@ sub new{
 
 This cleans up the output directory for a specified object.
 
-One argument is taken and that is the object to be cleaned from
-the output directory.
+One argument is taken and that is the L<Toader::Directory> to be
+cleaned from the output directory.
 
     $foo->cleanup( $obj );
     if($foo->error){
@@ -354,19 +353,19 @@ sub cleanup{
 
 =head2 1
 
-No Toader object passed.
+No L<Toader> object passed.
 
 =head2 2
 
-The passed object is not a Toader object.
+The passed object is not a L<Toader> object.
 
 =head2 3
 
-The Toader object passed has a permanent error set.
+The L<Toader> object passed has a permanent error set.
 
 =head2 4
 
-The passed object is not a Toader::Directory object.
+The passed object is not a L<Toader::Directory> object.
 
 =head2 5
 
@@ -374,7 +373,7 @@ No object passed.
 
 =head2 6
 
-The Toader object has not had a output directory set.
+The L<Toader> object has not had a output directory set.
 
 =head2 7
 
@@ -390,7 +389,7 @@ The object has not had a directory set for it.
 
 =head2 10
 
-Toader::pathHelper errored.
+L<Toader::pathHelper> errored.
 
 =head2 11
 

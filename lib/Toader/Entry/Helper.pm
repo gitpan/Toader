@@ -14,11 +14,11 @@ Toader::Entry::Helper - Misc helper methods for entries.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 METHODS
 
@@ -183,6 +183,7 @@ sub generateEntryName{
 	if ($sec=~/^[0123456789]$/) {
 		$sec='0'.$sec;
 	}
+	$mon++;
 	my $hsec=gettimeofday;
 	$hsec=~s/.*\.//;
 
@@ -375,7 +376,7 @@ sub validEntryNameRegex{
 
 =head2 1
 
-Not a toader directory.
+Not a L<Toader> directory.
 
 =head2 2
 
@@ -395,7 +396,7 @@ The entry name is not valid.
 
 =head2 6
 
-Failed to initialize Toader::Entry::Manage.
+Failed to initialize L<Toader::Entry::Manage>.
 
 =head2 7
 

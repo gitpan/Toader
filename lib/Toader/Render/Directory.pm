@@ -11,15 +11,15 @@ use Toader::Render::General;
 
 =head1 NAME
 
-Toader::Render::Directory - 
+Toader::Render::Directory - Renders a Toader::Directory object.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -33,11 +33,11 @@ This initiates the object.
 
 =head4 obj
 
-This is the Toader::Directory object to render.
+This is the L<Toader::Directory> object to render.
 
 =head4 toader
 
-This is the Toader object to use.
+This is the L<Toader> object to use.
 
 =head2 toDir
 
@@ -436,19 +436,19 @@ sub render{
 
 =head2 1
 
-No Toader::Directory object specified.
+No L<Toader::Directory> object specified.
 
 =head2 2
 
-No Toader object specified.
+No L<Toader> object specified.
 
 =head2 3
 
-The Toader::Directory object has a permanent error set.
+The L<Toader::Directory> object has a permanent error set.
 
 =head2 4
 
-The Toader object has a permanent error set.
+The L<Toader> object has a permanent error set.
 
 =head2 5
 
@@ -456,11 +456,11 @@ The Toader::Directory object does not have a directory set.
 
 =head2 6
 
-Initializing Toader::Render::Directory::Cleanup failed.
+Initializing L<Toader::Render::Directory::Cleanup> failed.
 
 =head2 7
 
-Failed to initialize Toader::Render::General.
+Failed to initialize L<Toader::Render::General>.
 
 =head1 AUTHOR
 

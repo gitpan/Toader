@@ -11,11 +11,11 @@ Toader::Render::Page::Cleanup - This is used for cleaning up the output director
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 
 =head1 SYNOPSIS
@@ -26,7 +26,7 @@ our $VERSION = '0.0.0';
 
 This initiates the object.
 
-One argument is required and it is a Toader object.
+One argument is required and it is a L<Toader> object.
 
 	my $foo=Toader::Render::Page::Cleanup->new($toader);
     if($foo->error){
@@ -354,19 +354,19 @@ sub cleanup{
 
 =head2 1
 
-No Toader object passed.
+No L<Toader> object passed.
 
 =head2 2
 
-The passed object is not a Toader object.
+The passed object is not a L<Toader> object.
 
 =head2 3
 
-The Toader object passed has a permanent error set.
+The L<Toader> object passed has a permanent error set.
 
 =head2 4
 
-The passed object is not a Toader::Page object.
+The passed object is not a L<Toader::Page> object.
 
 =head2 5
 
@@ -374,7 +374,7 @@ No object passed.
 
 =head2 6
 
-The Toader object has not had a output directory set.
+The L<Toader> object has not had a output directory set.
 
 =head2 7
 
@@ -390,9 +390,11 @@ The object has not had a directory set for it.
 
 =head2 10
 
-Toader::pathHelper errored.
+L<Toader::pathHelper> errored.
 
 =head2 11
+
+Cleaned errored. See error message.
 
 =head1 AUTHOR
 
@@ -411,8 +413,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Toader::Render
-
+    perldoc Toader::Render::Page::Cleanup
 
 You can also look for information at:
 
@@ -449,7 +450,6 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-
 
 =cut
 

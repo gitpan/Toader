@@ -72,7 +72,7 @@ It is rendered to $outputDir.'/toader.css' .
 
 The variables below are passed to it when rendering the template.
 
-    c - This is the Config::Tiny object holding the Toader config.
+    c - This is the L<Config::Tiny> object holding the Toader config.
     toader - This is the Toader object.
 
 =cut

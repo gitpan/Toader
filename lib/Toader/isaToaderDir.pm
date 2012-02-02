@@ -10,11 +10,11 @@ Toader::isaToaderDir - Checks if a directory has Toader support or not.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 
 =head1 SYNOPSIS
@@ -55,9 +55,9 @@ sub new{
 
 =head2 isaToaderDir
 
-This checks if a directory is a Toader directory.
+This checks if a directory is a L<Toader> directory.
 
-If it is it returns true, it is a Toader directory.
+If it is it returns true, it is a L<Toader> directory.
 
 A error will only be generated if a directory is not specified
 or it does not exist.

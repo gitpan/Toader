@@ -14,11 +14,11 @@ Toader::Templates - This handles fetching Toader templates.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -73,7 +73,7 @@ sub new{
 
 =head2 dirGet
 
-This gets Toader directory this entry is associated with.
+This gets L<Toader> directory this entry is associated with.
 
 This will only error if a permanent error is set.
 
@@ -96,9 +96,9 @@ sub dirGet{
 
 =head2 dirSet
 
-This sets Toader directory this entry is associated with.
+This sets L<Toader> directory this entry is associated with.
 
-One argument is taken and it is the Toader directory to set it to.
+One argument is taken and it is the L<Toader> directory to set it to.
 
     $foo->dirSet($toaderDirectory);
     if($foo->error){
@@ -489,7 +489,7 @@ sub templateNameCheck{
 
 =head2 1
 
-The specified directory is not a Toader directory.
+The specified directory is not a L<Toader> directory.
 
 =head2 2
 

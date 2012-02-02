@@ -13,11 +13,11 @@ Toader::Page::Helper - Misc helper methods for pages.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 =head1 METHODS
 
@@ -192,6 +192,10 @@ sub setDir{
 
 =head2 summary
 
+This builds a summary of of the the pages.
+
+
+
 =cut
 
 sub summary{
@@ -288,7 +292,7 @@ sub validPageName{
 
 =head2 1
 
-Not a toader directory.
+Not a L<Toader> directory.
 
 =head2 2
 
@@ -308,7 +312,7 @@ The page name is not valid.
 
 =head2 6
 
-Failed to initialize Toader::Page::Helper
+Failed to initialize L<Toader::Page::Helper>.
 
 =head1 AUTHOR
 
@@ -369,4 +373,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Toader
+1; # End of Toader::Page::Helper

@@ -90,8 +90,8 @@ if ( defined( $ENV{'Toader_outputdir'} ) ){
 	if ( $toader->error ){
 		warn('toader-dir: Failed to set the output directory. error="'.$toader->error.
 			 '" errorString="'.$toader->errorString.'"');
-		exit $toader->error
-	};
+		exit $toader->error;
+	}
 }
 
 #initializes the toader directory object

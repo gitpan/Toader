@@ -16,11 +16,11 @@ Toader::Render::Page - This renders a Toader::Page object.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -34,11 +34,11 @@ This initiates the object.
 
 =head4 obj
 
-This is the Toader::Page object to render.
+This is the L<Toader::Page> object to render.
 
 =head4 toader
 
-This is the Toader object to use.
+This is the L<Toader> object to use.
 
 =head2 toDir
 
@@ -550,23 +550,23 @@ sub summaryContent{
 
 =head2 1
 
-No Toader::Page object specified.
+No L<Toader::Page> object specified.
 
 =head2 2
 
-No Toader object specified.
+No L<Toader> object specified.
 
 =head2 3
 
-The Toader::Page object has a permanent error set.
+The L<Toader::Page> object has a permanent error set.
 
 =head2 4
 
-The Toader object has a permanent error set.
+The L<Toader> object has a permanent error set.
 
 =head2 5
 
-The Toader::Page object does not have a directory set
+The L<Toader::Page> object does not have a directory set
 
 =head2 6
 
@@ -590,7 +590,7 @@ The object does not have a directory set.
 
 =head2 11
 
-The Toader object does not have a output directory set.
+The L<Toader> object does not have a output directory set.
 
 =head2 12
 
@@ -621,7 +621,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Toader::Render
+    perldoc Toader::Render::Page
 
 
 You can also look for information at:

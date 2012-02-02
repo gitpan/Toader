@@ -10,11 +10,11 @@ Toader::Render::Entry::backends::html - This handles the html backend stuff for 
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -40,11 +40,11 @@ This initiates the object.
 
 =head4 obj
 
-This is the Toader::Entry object to render.
+This is the L<Toader::Entry> object to render.
 
 =head4 toader
 
-This is the Toader object to use.
+This is the L<Toader> object to use.
 
 	my $foo=Toader::Render::Entry::backends::html->new(\%args);
     if($foo->error){
@@ -162,23 +162,23 @@ sub render{
 
 =head2 1
 
-No Toader::Entry object specified.
+No L<Toader::Entry> object specified.
 
 =head2 2
 
-No Toader object specified.
+No L<Toader> object specified.
 
 =head2 3
 
-The Toader::Entry object has a permanent error set.
+The L<Toader::Entry> object has a permanent error set.
 
 =head2 4
 
-The Toader object has a permanent error set.
+The L<Toader> object has a permanent error set.
 
 =head2 5
 
-The Toader::Entry object does not have a directory set.
+The L<Toader::Entry> object does not have a directory set.
 
 =head2 6
 

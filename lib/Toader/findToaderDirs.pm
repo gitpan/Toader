@@ -11,11 +11,11 @@ Toader::findToaderDirs - Finds all Toader directories under a specified Toader d
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -53,9 +53,9 @@ sub new{
 
 =head2 findToaderDirs
 
-This returns all found Toader directories under the path.
+This returns all found L<Toader> directories under the path.
 
-One argument is taken and it a Toader directory.
+One argument is taken and it a L<Toader> directory.
 
 The returned array will also include the one it started in.
 
@@ -145,7 +145,7 @@ sub findToaderDirs{
 
 =head2 findToaderSubDirs
 
-This lists all sub Toader directories under a specified Toader directory.
+This lists all sub L<Toader> directories under a specified L<Toader> directory.
 
 This only returns the found directory names under the directory.
 
@@ -239,7 +239,7 @@ Not a directory.
 
 =head2 3
 
-Not a Toader directory.
+Not a L<Toader> directory.
 
 =head2 4
 
@@ -247,7 +247,7 @@ Toader::isaToaderDir->isaToaderDir errored.
 
 =head2 5
 
-"/" is the directory and it appears to be a Toader directory.
+"/" is the directory and it appears to be a L<Toader> directory.
 
 This is a major WTF and should not be even if '/.toader' exists.
 

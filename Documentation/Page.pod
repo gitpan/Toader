@@ -44,17 +44,17 @@ The entry content, the 'renderContent' method, is rendered in three passes.
 
 =head3 Pass One
 
-First the body is ran through Text::Template.
+First the body is ran through L<Text::Template>.
 
 No template is used for this pass.
 
-The variables below are passed to Text::Template.
+The variables below are passed to L<Text::Template>.
 
     name - This is the page name.
     from - This is the author or authors, from the From header.
     date - This is the entry name/date stap.
-    g - This is a Toader::Render::General object.
-    toader - This is a Toader object.
+    g - This is a L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
     sec - Seconds value take from the Date header.
     min - Minutes value take from the Date header.
     hour - Hours value take from the Date header.
@@ -62,9 +62,9 @@ The variables below are passed to Text::Template.
     month - Month value take from the Date header.
     year - Year value take from the Date header.
     zone - Time zone value take from the Date header.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
 
 =head3 Pass Two
 
@@ -81,14 +81,14 @@ The template used is 'pageContent'. The default one is below.
 
     [== $body ==]
 
-The variaables below are passed to Text::Template.
+The variaables below are passed to L<Text::Template>.
 
     body - This is output from pass two.
     name - This is the page name.
     from - This is the author or authors, from the From header.
     date - This is the entry name/date stap.
-    g - This is a Toader::Render::General object.
-    toader - This is a Toader object.
+    g - This is a L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
     sec - Seconds value take from the Date header.
     min - Minutes value take from the Date header.
     hour - Hours value take from the Date header.
@@ -96,9 +96,9 @@ The variaables below are passed to Text::Template.
     month - Month value take from the Date header.
     year - Year value take from the Date header.
     zone - Time zone value take from the Date header.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
 
 =head2 Output Rendering.
 
@@ -106,11 +106,11 @@ This is rendered via the 'render' method.
 
 The template used is 'page' with the variables below passed to it.
 
-    toader - The Toader object.
-    g - The Toader::Render::General object.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    toader - The L<Toader> object.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
     content - The output from the 'renderContent' method.
 
 Once that is created, it is written to
@@ -125,11 +125,11 @@ This creates a summary of all the pages in a directory.
 
 The template 'page' is filled out using the variables below.
 
-    toader - This is the Toader object.
-	g - This is the Toader::Render::General object.
-	self - This is the Toader::Render::Page object.
-	obj - This is the Toader::Page object.
-	c - This is the Config::Tiny object holding the Toader config.
+    toader - This is the L<Toader> object.
+	g - This is the L<Toader::Render::General> object.
+	self - This is the L<Toader::Render::Page> object.
+	obj - This is the L<Toader::Page> object.
+	c - This is the L<Config::Tiny> object holding the L<Toader> config.
 	locationID - This is the location ID, 'Pages Summary'.
 	content - This the return from summaryContent.
 
@@ -142,11 +142,11 @@ This creates content for the summary of the pages.
 
 The template 'pageSummary' is used with the variables below passed to it.
 
-    toader - This is the Toader object.
-    g - This is the Toader::General object.
-    self - This is the Toader::Render::General.
-    obj - This is the Toader::Page object.
-    c  - This is the Config::Tiny object storing the Toader config.
+    toader - This is the L<Toader> object.
+    g - This is the L<Toader::General> object.
+    self - This is the L<Toader::Render::General>.
+    obj - This is the L<Toader::Page> object.
+    c  - This is the L<Config::Tiny> object storing the L<Toader> config.
 
 The default template is as below.
 

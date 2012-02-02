@@ -1,8 +1,36 @@
 Revision history for Toader
 
+0.1.0	 2012-02-02/14:10
+		 -Add Toader::AutoDoc, Toader::Render::AutoDoc, and
+		 	  Toader::Render::AutoDoc::Cleanup, Documentation/AutoDoc.pod 
+		 -Add supporting AutoDoc methods to Toader::Render::General.
+		 -Add AutoDoc related templates to Toader::Templates::Defaults.
+		 -Add bin/toader-autodoc.
+		 -Add the methodes below to Toader::Render::General.
+		 	  hasSubDirs
+		 	  hasAnyDirs
+		 	  autodocList
+		 	  adlink
+			  adListLink
+		 -Change content float method to none. This allows it to wrap around the
+		 	menu. Avoiding misc formatting issues.
+		 -Correct date processessing.
+		 -Note security related issues with Toader.
+		 -Note VCS integration.
+		 -Misc. cleanups.
+		 -Rework the page template so the HR is only present in the sidebar if there
+		 		 is more than one section.
+		 -Add the templates listed below.
+		 	  autodocLink
+			  linkAutoDocList
+			  autodocListBegin
+			  autodocContent
+			  autodocListRow
+			  autodocListJoin
+			  autodocListEnd			  
+
 0.0.1	 2011-12-24/17:30
 		 -Correct some POD NAME issues.
 
 0.0.0	 2011-12-24/09:00
 		-Initial release.
-

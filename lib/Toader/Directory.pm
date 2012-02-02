@@ -12,11 +12,11 @@ Toader::Directory - This the index file for a Toader directory.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -154,7 +154,7 @@ sub bodySet{
 
 =head2 dirGet
 
-This gets Toader directory this entry is associated with.
+This gets L<Toader> directory this entry is associated with.
 
 This will only error if a permanent error is set.
 
@@ -178,9 +178,9 @@ sub dirGet{
 
 =head2 dirSet
 
-This sets Toader directory this entry is associated with.
+This sets L<Toader> directory this entry is associated with.
 
-One argument is taken and it is the Toader directory to set it to.
+One argument is taken and it is the L<Toader> directory to set it to.
 
     $foo->dirSet($toaderDirectory);
     if($foo->error){
@@ -251,7 +251,7 @@ sub dirSet{
 
 =head2 listSubToaderDirs
 
-This lists the sub Toader directories in the current Toader directory, ignoring items
+This lists the sub L<Toader> directories in the current L<Toader> directory, ignoring items
 starting with a '.'.
 
 The returned value is a array containing a list of relative directory names.
@@ -524,7 +524,7 @@ sub subpartsExtract{
 =head2 subpartsGet
 
 This returns the results from the subparts
-methods from the internal Email::MIME object.
+methods from the internal L<Email::MIME> object.
 
     my @parts=$foo->subpartsGet;
     if ( $foo->error ){
@@ -843,7 +843,7 @@ Unable to open the index file for the specified directory.
 
 =head2 2
 
-The specified directory is not a Toader directory.
+The specified directory is not a L<Toader> directory.
 
 =head2 3
 
@@ -855,7 +855,7 @@ No directory has been specified yet.
 
 =head2 5
 
-The directory is no longer a Toader directory.
+The directory is no longer a L<Toader> directory.
 
 =head2 6
 
@@ -914,7 +914,7 @@ L<http://search.cpan.org/dist/Toader/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Zane C. Bowers-Hadley
+Copyright 2011 Zane C. Bowers-Hadley
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

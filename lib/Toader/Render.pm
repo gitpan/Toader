@@ -14,11 +14,11 @@ Toader::Render - This renders supported Toader objects.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 
 =head1 SYNOPSIS
@@ -33,7 +33,7 @@ our $VERSION = '0.0.0';
 
 This initiates the object.
 
-On argument is required and it is a Toader object.
+On argument is required and it is a L<Toader> object.
 
     my $foo->new($toader);
     if($foo->error){
@@ -285,7 +285,7 @@ No Toader object specified.
 
 =head2 4
 
-The object passed as a Toader object is not a Toader object.
+The object passed as a L<Toader> object is not a L<Toader> object.
 
 =head2 5
 

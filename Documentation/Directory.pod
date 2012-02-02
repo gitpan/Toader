@@ -24,15 +24,15 @@ The entry content, the 'renderContent' method, is rendered in three passes.
 
 =head3 Pass One
 
-First the body is ran through Text::Template.
+First the body is ran through L<Text::Template>.
 
 No template is used for this pass.
 
-The variables below are passed to Text::Template.
+The variables below are passed to L<Text::Template>.
 
     date - This is the entry name/date stap.
-    g - This is a Toader::Render::General object.
-    toader - This is a Toader object.
+    g - This is a L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
     sec - Seconds value take from the Date header.
     min - Minutes value take from the Date header.
     hour - Hours value take from the Date header.
@@ -40,9 +40,9 @@ The variables below are passed to Text::Template.
     month - Month value take from the Date header.
     year - Year value take from the Date header.
     zone - Time zone value take from the Date header.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
 
 =head3 Pass Two
 
@@ -59,12 +59,12 @@ The template used is 'entryContent'. The default one is below.
 
     [== $body ==]
 
-The variaables below are passed to Text::Template.
+The variaables below are passed to L<Text::Template>.
 
     body - This is output from pass two.
     date - This is the entry name/date stap.
-    g - This is a Toader::Render::General object.
-    toader - This is a Toader object.
+    g - This is a L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
     sec - Seconds value take from the Date header.
     min - Minutes value take from the Date header.
     hour - Hours value take from the Date header.
@@ -72,9 +72,9 @@ The variaables below are passed to Text::Template.
     month - Month value take from the Date header.
     year - Year value take from the Date header.
     zone - Time zone value take from the Date header.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
 
 =head2 Output Rendering.
 
@@ -82,11 +82,11 @@ This is rendered via the 'render' method.
 
 The template used is 'page' with the variables below passed to it.
 
-    toader - The Toader object.
-    g - The Toader::Render::General object.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
+    toader - The L<Toader> object.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
     body - The output from the 'content' method.
     locationID - This is the location ID to use, ''.
 

@@ -15,6 +15,7 @@ use Toader::pathHelper;
 use File::Spec;
 use Toader::Directory;
 use Email::Address;
+use Toader::AutoDoc;
 
 =head1 NAME
 
@@ -22,11 +23,11 @@ Toader::Render::General - Renders various general stuff for Toader as well as so
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 =head1 METHODS
 
@@ -38,11 +39,11 @@ This initiates the object.
 
 =head4 toader
 
-This is the Toader object.
+This is the L<Toader> object.
 
 =head4 obj
 
-This is the Toader object being worked with.
+This is the L<Toader> object being worked with.
 
 =head4 toDir
 
@@ -61,7 +62,7 @@ and if not defined will be set to the object directory, which is found via $args
 
     my $g=Toader::Render::General->new(\%args);
     if($g->error){
-        warn('error: '.$foo->error.":".$foo->errorString);
+        warn('error: '.$g->error.":".$g->errorString);
     }
 
 =cut
@@ -230,10 +231,175 @@ sub new{
 	return $self;
 }
 
+=head2 adlink
+
+This generates a link to the the specified documentation file.
+
+Three arguments are taken. The first is the relative directory to the
+Toader root in which it resides, which if left undefined is the same
+as the object used to initiate this object. The second is file found by
+autodoc. The third is the text for the link, which if left undefined is
+the same as the file.
+
+    $g->cdlink( $directory,  $file, $text );
+
+The template used for this is 'linkDirectory', which by default
+is as below.
+
+    <a href="[== $url ==]">[== $text ==]</a>
+
+The variables passed to it are as below.
+
+    url - This is the relative URL for this.
+    text - This to use for with the link.
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+	obj - This is the object that Toader was initiated with.
+
+=cut
+
+sub adlink{
+	my $self=$_[0];
+	my $dir=$_[1];
+	my $file=$_[2];
+	my $txt=$_[3];
+
+	#blanks any previous errors
+	if ( ! $self->errorblank ){
+        return undef;
+	}
+
+	if ( ! defined( $dir ) ){
+		$dir=$self->{r2r};
+	}
+
+	# make sure a file is specified
+	if ( ! defined( $file ) ){
+		$self->{error}=17;
+		$self->{errorString}='No file specified';
+		$self->warn;
+		return undef;
+	}
+
+	#make sure it does not start with ../
+	if ( $file =~ /^\.\.\// ){
+		$self->{error}=34;
+		$self->{errorString}='File matches /^..\//';
+		$self->warn;
+		return undef;
+	}
+
+	#append .html for POD docs
+	if ( $file =~ /\.[Pp][Oo][Dd]$/ ){
+		$file=$file.'.html';
+	}
+	if ( $file =~ /\.[Pp][Mm]$/ ){
+		$file=$file.'.html';
+	}
+
+	if ( ! defined( $txt ) ){
+		$txt=$file;
+	}
+
+	my $link=$self->{b2r}.'/'.$dir.'/.autodoc/.files/'.$file;
+
+    #renders the beginning of the authors links
+    my $adlink=$self->{t}->fill_in(
+        'autodocLink',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+			url=>$link,
+			text=>$txt,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	return $adlink;
+}
+
+=head2 adListLink
+
+This returns a link to the documentation list.
+
+The template used for this is 'linkAutoDocList', which by default
+is as below.
+
+    <a href="[== $url ==]">[== $text ==]</a>
+
+The variables passed to it are as below.
+
+    url - This is the relative URL for this.
+    text - This to use for with the link.
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=cut
+
+sub adListLink{
+	my $self=$_[0];
+	my $text=$_[1];
+
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	if (! defined( $text ) ){
+		$text='Documentation';
+	}
+
+	my $link=$self->{b2r}.'/'.$self->{r2r}.'/.autodoc/';
+
+    #renders the beginning of the authors links
+    my $adllink=$self->{t}->fill_in(
+        'linkAutoDocList',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            url=>$link,
+            text=>$text,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+    return $adllink;
+}
+
 =head2 atRoot
 
 This returns a Perl boolean value for if the current directory
-is the root Toader directory or not.
+is the root L<Toader> directory or not.
 
     my $atRoot=$g->atRoot;
     if ( $aRoot ){
@@ -277,10 +443,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =head4 authorLink
 
@@ -295,10 +461,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
     address - The email address of the author.
     comment - The comment portion of it.
     original - The original form for this chunk.
@@ -320,10 +486,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =head4 authorEnd
 
@@ -336,10 +502,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =cut
 
@@ -469,6 +635,231 @@ sub authorsLink{
 	return $begin.join( $joiner, @tojoin ).$end;
 }
 
+=head2 autodocList
+
+This a list of generates a table of the various
+documents.
+
+One argument is accepted and the directory under the l<Toader> root
+directory. If not specified, it is the same as object used to initate
+this object.
+
+    $g->autodocList;
+
+=head3 Templates
+
+=head4 autodocListBegin
+
+This initiates the table for the list.
+
+The default template is as below.
+
+    <table id="autodocList">
+      <tr> <td>File</td> </tr>
+    
+
+The variables passed to it are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    dir - This is the directory relative to the root L<Toader> directory.
+
+=head4 autodocListRow
+
+This is the represents a row in the document table.
+
+The default template is as below.
+
+      <tr id="autodocList">
+        <td id="autodocList">[== $g->adlink( $dir, $file ) ==]</td>
+      </tr>
+
+The variables passed to it are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    dir - This is the directory relative to the root L<Toader> directory.
+    file - This is the file to show.
+
+=head4 autodocListJoin
+
+This is used to join the table rows.
+
+The default template is blank.
+
+The variables passed to it are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    dir - This is the directory relative to the root L<Toader> directory.
+
+=head4 autodocListEnd
+
+This is ends the documentation list.
+
+The default template is as below.
+
+    </table>
+
+The variables passed to it are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    dir - This is the directory relative to the root L<Toader> directory.
+
+=cut
+
+sub autodocList{
+	my $self=$_[0];
+	my $dir=$_[1];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	if ( ! defined( $dir ) ){
+		$dir=$self->{r2r};
+	}
+
+	my $fullpath=$self->{toader}->getRootDir.'/'.$dir;
+
+	my $ad=Toader::AutoDoc->new;
+
+	$ad->dirSet( $fullpath );
+	if ( $ad->error ){
+		$self->{error}=35;
+		$self->{errorString}='Failed to set the directory for the Toader::AutoDoc object to "'.$fullpath.'"';
+		$self->warn;
+		return undef;
+	}
+
+	my @files=$ad->findDocs;
+	if ( $ad->error ){
+		$self->{error}=36;
+		$self->{errorString}='';
+		$self->warn;
+		return undef;
+	}
+	
+	#puts together the list of docs
+	my $int=0;
+	my @links;
+	while ( defined( $files[$int] ) ){
+		
+		my $rendered=$self->{t}->fill_in(
+			'autodocListRow',
+			{
+				toDir=>$self->{toDir},
+				toFiles=>$self->{toFiles},
+				obj=>\$self->{obj},
+				c=>\$self->{toader}->getConfig,
+				toader=>\$self->{toader},
+				self=>\$self,
+				g=>\$self,
+				file=>$files[$int],
+				dir=>$dir,
+			}
+			);
+        if ( $self->{t}->error ){
+			$self->{error}=10;
+			$self->{errorString}='Failed to fill in the template. error="'.
+				$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+			$self->warn;
+			return undef;
+        }
+		
+		push( @links, $rendered );
+
+		$int++;
+	}
+
+	my $begin=$self->{t}->fill_in(
+		'autodocListBegin',
+		{
+			toDir=>$self->{toDir},
+			toFiles=>$self->{toFiles},
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+			g=>\$self,
+			dir=>$dir,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+    my $join=$self->{t}->fill_in(
+        'autodocListJoin',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            dir=>$dir,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+    my $end=$self->{t}->fill_in(
+        'autodocListEnd',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            dir=>$dir,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	return $begin.join($join, @links).$end;
+}
+
 =head2 b2r
 
 This returns the current value to get back to the root.
@@ -508,11 +899,11 @@ The variables passed to it are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -613,7 +1004,7 @@ This generates a link to a different directory object.
 
 Two arguments are taken.
 
-The first and required one is the Toader directory
+The first and required one is the L<Toader> directory
 to link to. This needs to be relative.
 
 The second is the text, which if not specified will will be the
@@ -632,11 +1023,11 @@ The variables passed to it are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -717,15 +1108,15 @@ This generates a link to a different directory object.
 
 Two arguments are taken.
 
-The first and required one is the Toader directory containing
-the Toader object. This needs to be relative.
+The first and required one is the L<Toader> directory containing
+the L<Toader> object. This needs to be relative.
 
 The second is the entry to link to.
 
 The third is the text, which if not specified will will be the
 same the link.
 
-    my $rendered=$foo->link( $dir, $entryID, "whatever at foo.bar" );
+    $g->link( $dir, $entryID, "whatever at foo.bar" );
 
 The template used is 'linkEntry' and the default is as below.
 
@@ -737,11 +1128,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -857,10 +1248,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =head4 entryArchiveRow
 
@@ -879,10 +1270,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
     date - This is the entry name/date stamp.
     title - This is the title of the entyr.
     summary - This is a summary of the entry.
@@ -898,10 +1289,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
-    toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    c - The L<Config::Tiny> object containing the L<Toader> config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =head4 entryArchiveEnd
 
@@ -916,10 +1307,10 @@ The variables passed to it are as below.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
     obj - This is the object that it was invoked for.
-    c - The Config::Tiny object containing the Toader config.
+    c - The L<Config::Tiny> object containing the Toader config.
     toader - This is a Toader object.
-    self - This the Toader::Render::General object.
-    g - This the Toader::Render::General object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =cut
 
@@ -1090,11 +1481,11 @@ The variables used are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -1160,11 +1551,11 @@ The variables are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -1231,11 +1622,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -1291,6 +1682,33 @@ sub flink{
 	return $rendered;
 }
 
+=head2 hasDocs
+
+This returns true if the current directory has any
+documentation.
+
+    if ( $g->hasDocs ){
+        print "This directory has documentation...";
+    }
+
+=cut
+
+sub hasDocs{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #returns true if there is a autodoc directory for the current Toader directory
+    if ( -d $self->{odir}.'/.toader/autodoc/' ){
+        return 1;
+    }
+
+    return 0;
+}
+
 =head2 hasEntries
 
 Check if a entries directory exists for the
@@ -1318,16 +1736,157 @@ sub hasEntries{
 	return 0;
 }
 
+=head2 hasAnyDirs
+
+This returns true if there are either Toader sub directories or
+it is not at root.
+
+    if ( $g->hasAnyDirs ){
+        print "Either not at root or there are Toader sub directires...";
+    }
+
+=cut
+
+sub hasAnyDirs{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	my $subs=$self->hasSubDirs;
+	if ( $self->error ){
+		$self->warnString('Failed to check if the directory has any Toader sub directories');
+		return undef;
+	}
+
+	#return 1 as there are directories
+	if ( $subs ){
+		return 1;
+	}
+
+	#if we are at root and there no Toader sub directories then this is the only Toader directory
+	if ( $self->atRoot ){
+		return 0;
+	}
+
+	#we are not at root then there is a directory that can be go gone to
+	return 1;
+}
+
+=head2 hasSubDirs
+
+This returns to true if the current object
+directory has any Toader sub directories.
+
+    if ( $g->hasSubDirs ){
+        print "This directory has sub directories.";
+    }
+
+=cut
+
+sub hasSubDirs{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #gets a list of directories
+	my @dirs;
+	if ( ref( $self->{odir} ) eq 'Toader::Directory' ){
+		@dirs=$self->{odir}->listSubToaderDirs;
+		if ( $self->{odir}->error ){
+			$self->{error}=22;
+			$self->{errorString}='Failed to get a list of Toader sub directories. error="'
+				.$self->{odir}->error.'" errorString="'.$self->{odir}->errorString.'"';
+			return undef;
+		}
+	}else{
+		my $dobj=Toader::Directory->new;
+		$dobj->dirSet( $self->{odir} );
+		@dirs=$dobj->listSubToaderDirs;
+		if ( $dobj->error ){
+			$self->{error}=22;
+			$self->{errorString}='Failed to get a list of Toader sub directories. error="'
+				.$dobj->error.'" errorString="'.$dobj->{odir}->errorString.'"';
+			return undef;
+		}
+	}
+
+	if ( defined( $dirs[0] ) ){
+		return 1;
+	}
+	
+	return 0;
+}
+
 =head2 lastEntries
 
-This returns the last entries.
+This returns the last entries, post rendering each one and joining them.
 
 There is one optional and that is number of last entries to show. If
 not specified, it shows the last 15.
 
     $g->lastEntries;
 
+=head3 Templates
 
+=head4 entryListBegin
+
+This begins the list of the last entries.
+
+The default template is blank.
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+
+=head4 entryListJoin
+
+This joins the rendered entries.
+
+The default template is as below.
+
+    <br>
+    
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+
+=head4 entryListEnd
+
+This ends the list of rendered entries.
+
+The default template is as below.
+
+    <br>
+
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
 
 =cut
 
@@ -1492,7 +2051,7 @@ Two arguments are taken. The first and required one is the link.
 The second is the text, which if not specified will will be the same
 the link.
 
-    my $rendered=$foo->link( "http://foo.bar/whatever/", "whatever at foo.bar" );
+    $g->link( "http://foo.bar/whatever/", "whatever at foo.bar" );
 
 The template used is 'link' and by default it is as below.
 
@@ -1504,11 +2063,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -1581,11 +2140,11 @@ The variables passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 dirListJoin
 
@@ -1600,11 +2159,11 @@ The passed variables are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 dirListLink
 
@@ -1618,12 +2177,11 @@ The passed variables are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
-
+    obj - The L<Toader::Entry>> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 dirListEnd
 
@@ -1638,11 +2196,11 @@ The passed variables are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -1805,11 +2363,11 @@ The variables passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 pageListJoin
 
@@ -1824,11 +2382,11 @@ The variables passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 pageListLink
 
@@ -1842,11 +2400,11 @@ The variables passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 pageListEnd
 
@@ -1861,12 +2419,11 @@ The variables passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
-
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2026,11 +2583,11 @@ The variabled passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 locationPart
 
@@ -2046,11 +2603,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 locationEnd
 
@@ -2067,11 +2624,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
     locationID - The string to use for the end location bar.
 
 =cut
@@ -2202,9 +2759,9 @@ sub locationbar{
 
 This returns the current value to from the root directory
 to directory for the object that initialized this instance
-of Toader::Render::General.
+of L<Toader::Render::General>.
 
-    my $or2r=$foo->or2r;
+    my $or2r=$g->or2r;
 
 =cut
 
@@ -2259,11 +2816,11 @@ The variabled passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =head4 pageSummarySummary
 
@@ -2280,11 +2837,11 @@ The variabled passed are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
     name - This is the name of the page.
     summary - This is a summary of the page.
 
@@ -2455,11 +3012,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2532,11 +3089,11 @@ The variables passed are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2670,11 +3227,11 @@ The variables are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2754,11 +3311,11 @@ The variables are as below.
 
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2818,11 +3375,11 @@ The passed variables are as below.
     text - This to use for with the link.
     toDir - This is the relative back to the directory.
     toFiles - This is the relative path to the '.files' directory.
-    obj - The Toader::Entry object.
-    c - The Config::Tiny object containing the Toader config.
-    self - The Toader::Render::Entry object.
-    toader - This is a Toader object.
-    g - This is a Toader::Render::General object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
 
 =cut
 
@@ -2873,15 +3430,15 @@ sub upOneDirLink{
 
 =head2 1
 
-No Toader object defined.
+No L<Toader> object defined.
 
 =head2 2
 
-The object specified for the Toader object is not really a Toader object.
+The object specified for the L<Toader> object is not really a L<Toader> object.
 
 =head2 3
 
-The specified Toader object has a permanent error set.
+The specified L<Toader> object has a permanent error set.
 
 =head2 4
 
@@ -2913,11 +3470,11 @@ No Toader directory specified.
 
 =head2 12
 
-The specified directory is not a Toader directory.
+The specified directory is not a L<Toader> directory.
 
 =head2 13
 
-No Toader Entry ID defined.
+No L<Toader::Entry> ID defined.
 
 =head2 14
 
@@ -2925,7 +3482,7 @@ The entry does not exist.
 
 =head2 15
 
-No Toader page is defined.
+No L<Toader> page is defined.
 
 =head2 16
 
@@ -2937,7 +3494,7 @@ No file specified.
 
 =head2 18
 
-Failed to initialize the Toader::Templates object.
+Failed to initialize the L<Toader::Templates> object.
 
 =head2 19
 
@@ -2949,16 +3506,16 @@ Failed to figure out the relative to root path.
 
 =head2 21
 
-Failed to initialize the Toader::pathHelper object.
+Failed to initialize the L<Toader::pathHelper> object.
 
 =head2 22
 
-Failed to get a list of Toader sub direcotires for the
+Failed to get a list of L<Toader> sub direcotires for the
 current directory.
 
 =head2 23
 
-Failed to set the directory for Toader::Page::Manage.
+Failed to set the directory for L<Toader::Page::Manage>.
 
 =head2 24
 
@@ -2966,7 +3523,7 @@ Failed to get a list of pages.
 
 =head2 25
 
-Toader::Entry::Manage could not have it's directory set.
+L<Toader::Entry::Manage> could not have it's directory set.
 
 =head2 26
 
@@ -2974,7 +3531,7 @@ Failed to read a entry.
 
 =head2 27
 
-Failed to initialize Toader::Render::Entry.
+Failed to initialize L<Toader::Render::Entry>.
 
 =head2 28
 
@@ -2990,7 +3547,7 @@ Failed to parse the authors line.
 
 =head2 31
 
-Toader::Entry::Manage could not have it's directory set.
+L<Toader::Entry::Manage> could not have it's directory set.
 
 =head2 32
 
@@ -3000,10 +3557,14 @@ Failed to list the pages for the directory.
 
 Failed to read the page.
 
+=head2 34
+
+The file specified for the AutoDoc link starts with a "../".
+
 =head1 AUTHOR
 
 Zane C. Bowers-Hadley, C<< <vvelox at vvelox.net> >>
-""
+
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-toader at rt.cpan.org>, or through
@@ -3014,7 +3575,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Toader::Render
+    perldoc Toader::Render::General
 
 You can also look for information at:
 

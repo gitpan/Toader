@@ -11,11 +11,11 @@ Toader::Render::CSS - This renders the CSS file for Toader.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -46,9 +46,9 @@ our $VERSION = '0.0.0';
 
 This initiates the object.
 
-One argument is taken. That is the a Toader object.
+One argument is taken. That is the a L<Toader> object.
 
-    my $foo=Toader::pathHelper->new($toader);
+    my $foo=Toader::Render::CSS->new($toader);
     if($foo->error){
         warn('error: '.$foo->error.":".$foo->errorString);
     }
@@ -192,11 +192,11 @@ sub render{
 
 =head2 1
 
-Nothing defined for the Toader object.
+Nothing defined for the L<Toader> object.
 
 =head2 2
 
-The specified object is not a Toader object.
+The specified object is not a L<Toader> object.
 
 =head2 3
 

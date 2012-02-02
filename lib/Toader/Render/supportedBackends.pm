@@ -126,7 +126,6 @@ You can find documentation for this module with the perldoc command.
 
     perldoc Toader::Render::supportedBackends
 
-
 You can also look for information at:
 
 =over 4

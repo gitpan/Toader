@@ -13,17 +13,11 @@ Toader::Entry::Manage - Manage entries.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.0.2
 
 =cut
 
-our $VERSION = '0.0.1';
-
-
-=head1 SYNOPSIS
-
-    use Toader::Entry::Manage;
-
+our $VERSION = '0.0.2';
 
 =head1 METHODS
 
@@ -103,6 +97,13 @@ sub list{
 =head2 read
 
 This reads a entry.
+
+One argument is taken and that is the entry name.
+
+    my $entry=$foo->read( $entryName );
+    if ( $foo->error ){
+        warn( 'Error:'.$foo->error.': '.$foo->errorStrin );
+    }
 
 =cut
 
@@ -233,7 +234,7 @@ sub remove{
 
 This sets the directory the module will work on.
 
-One argument is taken and that is the path for the Toader directory
+One argument is taken and that is the path for the L<Toader> directory
 in question.
 
     $foo->setDir($toaderDirectory)
@@ -300,7 +301,7 @@ isaToaderDir errored.
 
 =head2 3
 
-Is not a Toader directory.
+Is not a L<Toader> directory.
 
 =head2 4
 
@@ -332,7 +333,7 @@ Unable to open the entry file for reading.
 
 =head2 11
 
-Generating a Toader::Entry object from a alredy existing entry failed.
+Generating a L<Toader::Entry> object from a alredy existing entry failed.
 
 =head1 AUTHOR
 

@@ -14,12 +14,11 @@ Toader::Page::Manage - Manage pages for a specified Toader directory.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
-
+our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
@@ -54,7 +53,7 @@ sub new{
 
 =head2 list
 
-This lists the available [ages.
+This lists the available pages.
 
     my @pages=$foo->list;
     if($foo->error){
@@ -117,9 +116,9 @@ This reads a page.
 
 One argument is required and it is entry name.
 
-The returned
+The returned value is a L<Toader::Page> object.
 
-    my $foo->read($page);
+    my $page=$foo->read($pageName);
     if($foo->error){
         warn('error: '.$foo->error.":".$foo->errorString);
     }
@@ -326,7 +325,7 @@ isaToaderDir errored.
 
 =head2 3
 
-Is not a Toader directory.
+Is not a L<Toader> directory.
 
 =head2 4
 
@@ -358,7 +357,7 @@ Unable to open the page file for reading.
 
 =head2 11
 
-Unable to generate a Toader::Page object from the file.
+Unable to generate a L<Toader::Page> object from the file.
 
 =head1 AUTHOR
 

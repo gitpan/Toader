@@ -4,19 +4,19 @@
 
 Below is a list of variables that are commonly used in documentation.
 
-    $entryName - The entry name for a Toader::Entry object.
+    $entryName - The entry name for a L<Toader::Entry> object.
     $outputDir - This is base directory for writing output to.
-    $r2r - This is relative path from root Toader direcotry to the current one.
-    $toaderDir - This is a Toader directory.
-    $toaderRoot - This is the root Toader directory.
+    $r2r - This is relative path from root L<Toader> directory to the current one.
+    $toaderDir - This is a L<Toader> directory.
+    $toaderRoot - This is the root L<Toader> directory.
     $pageName - This is the name of the page.
 
 =head1 What is a Toader directory?
 
 A Toader directory is a directory with a '.toader' directory in it. The
-Toader root is base Toader directory in a tree of Toader directories.
+Toader root is base Toader directory in a tree of L<Toader> directories.
 
-The following limitations are imposed on what can be a Toader directory.
+The following limitations are imposed on what can be a L<Toader> directory.
 
 First it can't be root, '/'.
 
@@ -28,37 +28,49 @@ Below is a posibility of what a '.toader' directory may contain as well as
 the mapping to the relavent documentation.
 
     entries/ - Entry.pod
-    pages/ - Pages.podf
+    pages/ - Pages.pod
     index - Directory.pod
-    config.ini - Config.podf
+    config.ini - Config.pod
     templates/ - Templates.pod
+    autodoc/ - AutoDoc.pod
 
 =head1 Common Objects
 
+=head2 AutoDoc
+
+This copies over documentation from the specified directories under the specified
+directories under the L<Toader> directory.
+
+The related modules are as below.
+
+    L<Toader::AutoDoc>
+    L<Toader::Render::AutoDoc>
+    L<Toader::Render::AutoDoc::Cleanup>
+
 =head2 Directory
 
-This is a Toader directory. It renders to a single page that acts a index/landing
+This is a L<Toader> directory. It renders to a single page that acts a index/landing
 page for a directory.
 
 The related modules are as below.
 
-    Toader::Directory
-    Toader::Render::Directory
-    Toader::Render::Directory::Cleanup
-    Toader::Render::Directory::backends::html
+    L<Toader::Directory>
+    L<Toader::Render::Directory>
+    L<Toader::Render::Directory::Cleanup>
+    L<Toader::Render::Directory::backends::html>
 
 =head2 Entry
 
-Entries are basically a blog entry or a article in a Toader directory.
+Entries are basically a blog entry or a article in a L<Toader> directory.
 
 By default the last entries page will the 25 newest articles.
 
 The related modules are as below.
 
-    Toader::Entry
-    Toader::Render::Entry
-    Toader::Render::Entry::Cleanup
-    Toader::Render::Entry::backends::html
+    L<Toader::Entry>
+    L<Toader::Render::Entry>
+    L<Toader::Render::Entry::Cleanup>
+    L<Toader::Render::Entry::backends::html>
 
 =head2 Page
 
@@ -67,18 +79,18 @@ etc.
 
 The related modules are as below.
 
-    Toader::Page
-    Toader::Render::Page
-    Toader::Render::Page::Cleanup
-    Toader::Render::Page::backends::html
+    L<Toader::Page>
+    L<Toader::Render::Page>
+    L<Toader::Render::Page::Cleanup>
+    L<Toader::Render::Page::backends::html>
 
 =head1 Rendering
 
 Rendering is handled be done via two methods, if not doing it
 via the command line tools.
 
-The first is to use Toader::Render. This is the simpler
-method as once initiated Toader::Render can be reused.
+The first is to use L<Toader::Render>. This is the simpler
+method as once initiated L<Toader::Render> can be reused.
 
 The second is to invoke the rendering module for that type
 of object directly and use it to render it. For some things
@@ -156,13 +168,28 @@ The template "page" is used for rendering all pages. It is as below.
 
 The following variables are passed to it.
 
-    toader - The Toader object.
-    g - The Toader::Render::General object.
-    self - The Toader::Render::Entry object.
-    obj - The Toader::Entry object.
-    c - The Config::Tinry holding the Toader config.
+    toader - The L<Toader> object.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     content - This is the content to be included in the content section of the page.
 
-=head1 
+=head1 VCS integration
+
+Toader is meant to integrate with a versioning system. By storing everything as a file,
+this is a fairly trivial task.
+
+This allows the website to easily be stored in the same place and manner as the coding project
+that it is a website for, which allows documentation to be published easily and automatically
+via L<Toader::AutoDoc> .
+
+=head1 Security Concerns
+
+As Toader uses Perl for templating, this means any arbitrary could can
+be executed via rendering it. For this purpose it is important that the person
+doing the rendering trusts that nothing dangerous is in any of it. For this
+purpose one needs to trust the any one who has commit privledges to that part
+of the VCS tree that contains it.
 
 =cut

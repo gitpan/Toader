@@ -30,6 +30,8 @@ WriteMakefile(
 		'Date::Parse'=>0,
 		'Email::Address'=>0,
 		'Time::HiRes'=>0,
+		'Pod::Simple::HTML'=>0,
+		'File::Copy'=>0,
 	},
 	dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 	clean               => { FILES => 'Toader-*' },

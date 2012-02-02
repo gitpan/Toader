@@ -15,11 +15,11 @@ Toader::Entry - This holds a blog/article/whatever entry.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.0.2
 
 =cut
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.0.2';
 
 =head1 SYNOPSIS
 
@@ -412,7 +412,7 @@ sub bodySet{
 
 =head2 dirGet
 
-This gets Toader directory this entry is associated with.
+This gets L<Toader> directory this entry is associated with.
 
 This will only error if a permanent error is set.
 
@@ -437,9 +437,9 @@ sub dirGet{
 
 =head2 dirSet
 
-This sets Toader directory this entry is associated with.
+This sets L<Toader> directory this entry is associated with.
 
-One argument is taken and it is the Toader directory to set it to.
+One argument is taken and it is the L<Toader> directory to set it to.
 
     my $dir=$foo->dirSet($toaderDirectory);
     if($foo->error){
@@ -485,7 +485,7 @@ sub dirSet{
 
 =head2 entryNameGet
 
-This gets Toader directory this entry is associated with.
+This gets L<Toader> directory this entry is associated with.
 
 This will only error if a permanent error is set.
 
@@ -511,7 +511,7 @@ sub entryNameGet{
 
 =head2 entryNameSet
 
-This sets Toader directory this entry is associated with.
+This sets L<Toader> directory this entry is associated with.
 
 One argument is taken and it is the Toader directory to set it to.
 If none is specified it will be generated.
@@ -989,7 +989,7 @@ sub subpartsExtract{
 =head2 subpartsGet
 
 This returns the results from the subparts
-methods from the internal Email::MIME object.
+methods from the internal L<Email::MIME> object.
 
     my @parts=$foo->subpartsGet;
     if ( $foo->error ){
@@ -1097,7 +1097,7 @@ sub subpartsRemove{
 
 This writes the entry out to a file.
 
-This requires a Toader directory to have been specified.
+This requires a L<Toader> directory to have been specified.
 
 	$foo->write;
     if($foo->error){
@@ -1236,7 +1236,7 @@ sub renderUsing{
 
 =head2 toaderRenderable
 
-This method returns true and marks it as being Toader
+This method returns true and marks it as being L<Toader>
 renderable.
 
 =cut
@@ -1281,7 +1281,7 @@ No name specified.
 
 =head2 2
 
-Unable to create Email::MIME object.
+Unable to create L<Email::MIME> object.
 
 =head2 3
 
@@ -1301,7 +1301,7 @@ Unable to open the file.
 
 =head2 7
 
-Unable to create a Email::MIME object for one of the parts/files.
+Unable to create a L<Email::MIME> object for one of the parts/files.
 
 =head2 8
 
@@ -1325,7 +1325,7 @@ No directory has been set yet.
 
 =head2 13
 
-The directory is no longer a Toader directory. It looks like
+The directory is no longer a L<Toader> directory. It looks like
 it has been removed.
 
 =head2 14

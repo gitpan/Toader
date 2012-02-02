@@ -12,16 +12,11 @@ Toader::Config - Represents the Toader config.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.0.1
 
 =cut
 
-our $VERSION = '0.0.0';
-
-
-=head1 SYNOPSIS
-
-    use Toader::Config;
+our $VERSION = '0.0.1';
 
 =head1 METHODS
 
@@ -112,7 +107,7 @@ sub new{
 
 =head2 getConfig
 
-This returns the Config::Tiny object storing the Toader
+This returns the L<Config::Tiny> object storing the Toader
 config.
 
 There is no need to do any error checking as long as
@@ -409,23 +404,19 @@ sub write{
 	return 1;
 }
 
-=head1 File Format.
-
-The file format used is 
-
 =head1 ERROR CODES
 
 =head2 1
 
-No Toader object specified.
+No L<Toader> object specified.
 
 =head2 2
 
-The specified object is not a Toader object.
+The specified object is not a L<Toader> object.
 
 =head2 3
 
-The Toader object did not return a directory.
+The L<Toader> object did not return a directory.
 
 =head2 4
 

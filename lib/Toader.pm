@@ -17,11 +17,11 @@ Toader - A CMS meant to be integrated with a versioning system.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.1.0';
 
 =head1 SYNOPSIS
 
@@ -152,7 +152,7 @@ sub new{
 
 =head2 getConfig
 
-This returns the Config::Tiny object storing the Toader
+This returns the L<Config::Tiny> object storing the Toader
 config.
 
 There is no need to do any error checking as long as
@@ -175,7 +175,7 @@ sub getConfig{
 
 =head2 getConfigObj
 
-This returns the Toader::Config object that was created
+This returns the L<Toader::Config> object that was created
 when this module was created.
 
     my $configObj=$foo->getConfigObj;
@@ -195,7 +195,7 @@ sub getConfigObj{
 
 =head2 getDirObj
 
-This returns a Toader::Directory object with the directory
+This returns a L<Toader::Directory> object with the directory
 set to the Toader root.
 
     my $dirobj=$foo->getDirObj;
@@ -258,7 +258,7 @@ sub getOutputDir{
 
 =head2 getPathHelper
 
-This returns a Toader::pathHelper object for this Toader object.
+This returns a L<Toader::pathHelper> object for this Toader object.
 
 If the Toader object initialized with out issue, then there is no reason
 to check for an error.
@@ -369,11 +369,11 @@ The specified output directory is a Toader directory.
 
 =head2 5
 
-Could initialize the Toader::Directory object.
+Could initialize the L<Toader::Directory> object.
 
 =head2 6
 
-Failed to initialize Toader::Config.
+Failed to initialize L<Toader::Config>.
 
 =head2 7
 

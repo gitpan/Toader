@@ -31,6 +31,7 @@ use Toader;
 use Toader::findToaderDirs;
 use Toader::Page::Manage;
 use Toader::Entry::Manage;
+use Toader::AutoDoc;
 use Toader::Render::CSS;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
@@ -281,7 +282,7 @@ while ( defined( $dirs[$int] ) ){
 	$int++;
 }
 
- exit 55;
+exit 0;
 
    
 =head1 NAME
