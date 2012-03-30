@@ -13,4 +13,29 @@ filled out if not specified
     owner=getlogin.'@'.hostname
     last='25'
 
+=head1 Variables
+
+=head3 Main Section
+
+=head3 last
+
+This is the number of last entries to show.
+
+=head3 owner
+
+This is the owner's name that will be used for Copyright purposes.
+
+If not specified, it will degault to getlogin.'@'.hostname .
+
+=head3 site
+
+This is the name of the Toader site in question. If not specified,
+it will default to the hostnamem.
+
+=head3 url
+
+This is the base URL that for the site. This should be the URL that the
+base output directory is available at. In most situation, will will want
+to make sure this ends in a "/", for the purpose of rendering.
+
 =cut

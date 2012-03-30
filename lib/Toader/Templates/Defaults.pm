@@ -10,11 +10,11 @@ Toader::Templates::Defaults - This provides the default templates for Toader.
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.2.0
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 =head1 SYNOPSIS
 
@@ -72,6 +72,7 @@ sub new{
 	$self->{templates}{'toRootLink'}='<a href="[== $url ==]">[== $text ==]</a>';
 	$self->{templates}{'autodocLink'}='<a href="[== $url ==]">[== $text ==]</a>';
 	$self->{templates}{'linkAutoDocList'}='<a href="[== $url ==]">[== $text ==]</a>';
+	$self->{templates}{'linkGallery'}='<a href="[== $url ==]">[== $text ==]</a>';
 
 	$self->{templates}{'dirListBegin'}='';
 	$self->{templates}{'dirListEnd'}='';
@@ -91,6 +92,7 @@ sub new{
 	$self->{templates}{'authorJoin'}=", \n";
 	$self->{templates}{'authorEnd'}="\n";
 
+	$self->{templates}{'cssInclude'}='';
 	$self->{templates}{'css'}='div{
   border: 0px solid;
   padding: 2px;
@@ -101,7 +103,7 @@ div#sidebar{
   float: left;
   border: 1px solid;
  }
-div#maincontent{
+div#content{
   width: auto;
   float: none;
  }
@@ -117,11 +119,15 @@ div#content{
   width: 100%;
   border: 1px solid;
  }
+div#imageDiv{
+  border: 1px solid;
+  float: left;
+ }
 div#copyright{
   width: auto;
   text-align: center;
  clear: left;
-}
+ }
 body{
   background: black;
   color: white;
@@ -147,6 +153,15 @@ table#pageSummary{
 td#pageSummary{
   border: 1px solid;
  }
+table#hashToTable{
+  border: 1px solid;
+ }
+td#hashToTable{
+  border: 1px solid;
+ }
+tr#hashToTable{
+  border: 1px solid;
+ }
 ';
 
 	$self->{templates}{'page'}='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -165,6 +180,7 @@ td#pageSummary{
 
 	<div id="location" >
 	  [== $g->locationbar( $locationID ) ==]
+      [== $g->locationSub ==]
 	</div>
 
 	<div>
@@ -174,7 +190,7 @@ td#pageSummary{
 		  if ( ! $g->hasEntries ){
 		    return "";
 		  }
-	      return "		<h3>Entries</h3>\n".
+	      return "<h3>Entries</h3>\n".
 		  "		".$g->entriesLink." <br>\n".
 		  "		".$g->entriesArchiveLink." <br>\n";
 		==]
@@ -185,6 +201,20 @@ td#pageSummary{
 		  }
 		  return "		<hr><h3>".$g->pageSummaryLink."</h3>\n".$pages."\n		<hr>\n";
 		==]
+        [==
+            if( $g->hasGallery ){
+                return "<hr>\n<h3>".$g->galleryLink."</h3>";
+            }else{
+                return "";
+            }
+        ==]
+        [==
+            if( $g->hasAnyDirs ){
+                return "<hr>\n<h3>Directories</h3>";
+            }else{
+                return "";
+            }
+        ==]
 		[==
             if( $g->hasAnyDirs ){
                 return "<hr>\n<h3>Directories</h3>";
@@ -229,6 +259,46 @@ td#pageSummary{
         return "Copyright ".$year." ".$c->{_}->{owner};
       ==]
 	</div>
+
+  </body>
+</html>
+
+';
+
+	$self->{templates}{'pageGallery'}='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+  <head>
+    <title> [== $c->{_}->{siteTitle} ==] </title>
+    <LINK href="[== $g->cssLocation ==]" rel="stylesheet" type="text/css">
+  </head>
+
+  <body>
+
+    <div id="header" >
+      [== $g->top ==]
+    </div>
+
+    <div id="location" >
+      [== $g->locationbar( $locationID ) ==]
+      [== $g->locationSub ==]
+    </div>
+
+    <div>
+
+    <div id="content" >
+      [== $content ==]
+    </div>
+	
+    <br><br><br>
+	
+    <div id="copyright">
+      [==
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
+        $year=$year+1900;
+        return "Copyright ".$year." ".$c->{_}->{owner};
+       ==]
+    </div>
 
   </body>
 </html>
@@ -296,7 +366,90 @@ td#pageSummary{
     $self->{templates}{'autodocListJoin'}='';
     $self->{templates}{'autodocListEnd'}='</table>';
 
+    $self->{templates}{'hashToTableBegin'}='<table id="[== $cssID ==]">
+';
+    $self->{templates}{'hashToTableTitle'}='  <tr id="[== $cssID ==]">
+    <td id="[== $cssID ==]"><bold>[== $keyTitle ==]</td>
+    <td id="[== $cssID ==]"><bold>[== $valueTitle ==]</bold></td>
+  </tr>
+';
+    $self->{templates}{'hashToTableRow'}='  <tr id="[== $cssID ==]">
+    <td id="[== $cssID ==]">[== $key ==]</td>
+    <td id="[== $cssID ==]">[== $value ==]</td>
+  </tr>
+';
+
+    $self->{templates}{'hashToTableJoin'}='';
+    $self->{templates}{'hashToTableEnd'}='</table>';
+
+	$self->{templates}{'imageDiv'}='<div id=\'[== $cssID ==]\'>
+  [== $above ==]
+  [== if ( defined( $link ) ){ return \'<a href="\'.$link.\'">\' }else{ return \'\' } ==]
+  <img src="[== $image ==]" alt="[== $alt ==]"/>
+  [== if ( defined( $link ) ){ return \'</a>\' }else{ return \'\' } ==]<br>
+  [== $below ==]
+</div>
+';
+
+	$self->{templates}{'gallerySmallImageBegin'}='';
+	$self->{templates}{'gallerySmallImage'}='[== $g->galleryImageSmall( $dir, $gdir, $image ); ==]';
+	$self->{templates}{'galleryDir'}='<div id="imageDiv" > [== $link ==] </div>';
+	$self->{templates}{'gallerySmallImageJoin'}="\n";
+	$self->{templates}{'gallerySmallImageEnd'}='';
+
+    $self->{templates}{'galleryLocationStart'}='<h3>Gallery Location: ';
+    $self->{templates}{'galleryLocationPart'}='<a href="[== $url ==]">[== $text ==]</a>';
+	$self->{templates}{'galleryLocationJoin'}=' / ';
+    $self->{templates}{'galleryLocationEnd'}='</h3>
+';
+	$self->{templates}{'galleryLocationImage'}='<h3>Image: <a href="[== $url ==]">[== $image ==]</a></h3>
+';
+
+	
+	$self->{templates}{'imageExifTablesGroup'}='<br />
+<b>EXIF Tag Group: [== $group ==]</b>
+[== $table ==]
+<br />
+';
+	$self->{templates}{'imageExifTablesJoin'}='';
+	$self->{templates}{'imageExifTablesBegin'}='';
+	$self->{templates}{'imageExifTablesEnd'}='';
+	$self->{templates}{'imageExifTables'}='<b>Image: </b> [== $filename ==] <br/>
+[== $tables ==]
+';
+
 	return $self;
+}
+
+=head2 exists
+
+This checks if the specified template exists as a default template.
+
+One argument is required and that is the template name to check for.
+This method will only throw a error if it is left undefined.
+
+The return value is a Perl boolean value.
+
+    my $exists=$foo->exists($template);
+
+=cut
+
+sub exists{
+    my $self=$_[0];
+    my $name=$_[1];
+
+    if ( ! $self->errorblank ){
+        $self->{error}=1;
+        $self->{errorString}='No template specified';
+        $self->warn;
+        return undef;
+    }
+
+    if ( defined( $self->{templates}{$name}  ) ){
+        return 1;
+    }
+
+	return 0;
 }
 
 =head2 getTemplate
@@ -320,6 +473,10 @@ sub getTemplate{
 	my $name=$_[1];
 
 	if ( ! $self->errorblank ){
+		return undef;
+	}
+
+	if ( ! defined( $name ) ){
 		$self->{error}=1;
 		$self->{errorString}='No template specified';
 		$self->warn;
@@ -334,6 +491,26 @@ sub getTemplate{
 	}
 
 	return $self->{templates}{$name};
+}
+
+=head2 listTemplates
+
+This returns a list of default templates.
+
+No arguments are taken.
+
+    my @defTemplates=$foo->listTemplates;
+
+=cut
+
+sub listTemplates{
+    my $self=$_[0];
+
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	return keys( $self->{templates} );
 }
 
 =head1 ERROR CODES

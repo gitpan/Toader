@@ -12,10 +12,12 @@ use Toader::Render::CSS;
 use Toader::Render::Entry;
 use Toader::Render::supportedObjects;
 use Toader::pathHelper;
+use Toader::Gallery;
 use File::Spec;
 use Toader::Directory;
 use Email::Address;
 use Toader::AutoDoc;
+use Image::ExifTool;
 
 =head1 NAME
 
@@ -23,11 +25,11 @@ Toader::Render::General - Renders various general stuff for Toader as well as so
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.2.0
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 =head1 METHODS
 
@@ -55,6 +57,13 @@ would be "../".
 
 The default is "../../".
 
+This is set to '' if fullURL is set to true.
+
+=head4 fullURL
+
+This is if it should make a non-relative link for when generating links. If set to 1,
+it makes links non-relative. If not defined/false it uses relative links.
+
 =head4 dir
 
 This is the directory that it is currently in. This can differ from the object directory
@@ -80,11 +89,18 @@ sub new{
 			  isatd=>Toader::isaToaderDir->new,
 			  soc=>Toader::Render::supportedObjects->new,
 			  toDir=>'../../',
+			  fullURL=>0,
+			  locationSub=>'',
 			  };
 	bless $self;
 
 	if ( defined ( $args{toDir} ) ){
 		$self->{toDir}=$args{toDir};
+	}
+
+	
+	if ( defined( $args{fullURL} ) ){
+		$self->{fullURL}=$args{fullURL};
 	}
 
 	#make sure we have a usable Toader object
@@ -157,6 +173,16 @@ sub new{
 		return $self;
 	}
 
+	#cleans up the object directory path
+    $self->{odir}=$self->{ph}->cleanup( $self->{odir} );
+    if ( $self->{ph}->error ){
+		$self->{perror}=1;
+		$self->{error}=39;
+		$self->{errorString}='Failed to clean up the path for "'.$self->{odir}.'"';
+		$self->warn;
+		return undef;
+    }
+
 	#get this once as it does not change and is likely to be used
 	#gets the r2r for the object
 	$self->{or2r}=$self->{ph}->relative2root( $self->{odir} );
@@ -210,6 +236,21 @@ sub new{
     $self->{or2r}=File::Spec->canonpath( $self->{or2r} );
     $self->{ob2r}=File::Spec->canonpath( $self->{ob2r} );
 
+	#gets the base URL
+	my $c=$self->{toader}->getConfig;
+	if ( defined( $c->{'_'}->{'url'} ) ){
+		$self->{url}=$c->{'_'}->{'url'};
+	}
+	if ( $self->{fullURL} ){
+		if ( ! defined( $c->{'_'}->{url} ) ){
+			$self->{perror}=1;
+			$self->{error}=35;
+			$self->{errorString}='No URL specified in the Toader config';
+			$self->warn;
+			return $self;
+		}
+		$self->{toDir}='';
+	}
 
 	#figures out the file directory
 	$self->{toFiles}=$self->{b2r}.'/'.$self->{or2r}.'/'.$self->{obj}->filesDir;
@@ -305,9 +346,17 @@ sub adlink{
 		$txt=$file;
 	}
 
-	my $link=$self->{b2r}.'/'.$dir.'/.autodoc/.files/'.$file;
+	my $link='';
+	if ( $self->{fullURL} ){
+		$link=$dir.'/.autodoc/.files/'.$file;
+		$link=~s/\/\/*/\//g;
+		$link=$self->{url}.$link;
+	}else{
+		$link=$self->{b2r}.'/'.$dir.'/.autodoc/.files/'.$file;
+		$link=~s/\/\/*/\//g;
+	}
 
-    #renders the beginning of the authors links
+    #renders the AutoDoc link
     my $adlink=$self->{t}->fill_in(
         'autodocLink',
         {
@@ -368,7 +417,16 @@ sub adListLink{
 		$text='Documentation';
 	}
 
-	my $link=$self->{b2r}.'/'.$self->{r2r}.'/.autodoc/';
+    my $link='';
+    if ( $self->{fullURL} ){
+        $link=$self->{r2r};
+		$link=~s/\/\/*/\//g;
+		$link=$self->{url}.$link;
+    }else{
+		$link=$self->{b2r}.'/'.$self->{r2r}.'/.autodoc/';
+		$link=~s/\/\/*/\//g;
+    }
+
 
     #renders the beginning of the authors links
     my $adllink=$self->{t}->fill_in(
@@ -921,11 +979,17 @@ sub cdlink{
 		$text='./';
 	}
 
+	my $url=$self->{toDir};
+	$url=~s/\/\/*/\//g;
+	if ( $self->{fullURL} ){
+		$url=$self->{url}.$self->{r2r};
+	}
+
 	#render it
 	my $rendered=$self->{t}->fill_in(
 		'linkDirectory',
 		{
-			url=>$self->{toDir},
+			url=>$url,
 			text=>$text,
 			toDir=>$self->{toDir},
 			toFiles=>$self->{toFiles},
@@ -995,7 +1059,11 @@ sub cssLocation{
 		return undef;
 	}
 
-	return $self->{b2r}.'/toader.css';
+	if ( ! $self->{fullURL} ){
+		return $self->{b2r}.'/toader.css';
+	}else{
+		return $self->{url}.'toader.css';
+	}
 }
 
 =head2 dlink
@@ -1072,9 +1140,14 @@ sub dlink{
 		return undef;
 	}
 
-	#add the toDir to it
-	$dir=$self->{toDir}.$dir;
-	$dir=~s/\/\/*/\//g;
+	if ( $self->{fullURL} ){
+        $dir=$dir;
+		$dir=~s/\/\/*/\//g;
+		$dir=$self->{url}.$dir;
+    }else{
+		$dir=$self->{toDir}.$dir;
+		$dir=~s/\/\/*/\//g;
+    }
 	
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -1196,9 +1269,14 @@ sub elink{
 		return undef;
 	}
 
-	#add the toDir to it
-	$dir=$self->{toDir}.$dir.'/.entries/'.$entry.'/';
-	$dir=~s/\/\/*/\//g;
+	if ( $self->{fullURL} ){
+		$dir=$dir.'/.entries/'.$entry.'/';
+		$dir=~s/\/\/*/\//g;
+		$dir=$self->{url}.$dir;
+	}else{
+		$dir=$self->{toDir}.$dir.'/.entries/'.$entry.'/';
+		$dir=~s/\/\/*/\//g;
+	}
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -1502,9 +1580,15 @@ sub entriesArchiveLink{
 		return undef;
 	}
 
-	#creates the url and cleans it up
-	my $url=$self->{toDir}.'/.entries/archive.html';
-	$url=~s/\/\/*/\//g;
+	my $url;
+	if ( $self->{fullURL} ){
+		$url=$self->{r2r}.'/.entries/archive.html';
+		$url=~s/\/\/*/\//g;
+		$url=$self->{url}.$url;
+	}else{
+		$url=$self->{toDir}.'/.entries/archive.html';
+		$url=~s/\/\/*/\//g;
+	}
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -1572,9 +1656,15 @@ sub entriesLink{
 		return undef;
 	}
 
-	#creates the url and cleans it up
-	my $url=$self->{toDir}.'/.entries/';
-	$url=~s/\/\/*/\//g;
+	my $url;
+    if ( $self->{fullURL} ){
+        $url=$self->{r2r}.'/.entries/';
+		$url=~s/\/\/*/\//g;
+		$url=$self->{url}.$url;
+    }else{
+		$url=$self->{toDir}.'/.entries/';
+        $url=~s/\/\/*/\//g;
+    }
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -1682,6 +1772,966 @@ sub flink{
 	return $rendered;
 }
 
+=head2 galleryDirURL
+
+This returns the URL for a gallery directory.
+
+Three arguments are accepted. The first is the Toader
+directory to for the gallery, if not specified it uses
+the Toader directory for the current object. The
+second is the relative gallery directory, which if not
+specified defaults to the '', the root gallery directory.
+
+    [== $g->galleryDirURL ==]
+
+=cut
+
+sub galleryDirURL{
+    my $self=$_[0];
+    my $dir=$_[1];
+    my $gdir=$_[2];
+	
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+	
+	#clean it up, removing any possible multi /
+	$gdir=~s/\/\/*/\//g;
+	
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+	
+    #puts together the full path
+    my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+	
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #gets the output URL
+    my $outputURL=$tg->outputURLget;
+    if ( ! defined( $outputURL ) ){
+        $self->{error}=41;
+        $self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+        $self->warn;
+        return undef;
+    }
+
+	my $link='.toader-gallery/html/'.$gdir;
+	$link=~s/\/\/*/\//g;
+	return $outputURL.$link;
+}
+
+=head2 galleryImageLarge
+
+This generates the HTML for a large gallery image.
+
+Two arguments are taken. The first and optional one is the
+directory, which if not specified, it uses the Toader current
+directory. The second and required is the gallery directory for
+the image, which if not specified it defaults to the root
+directory, ''. The third and required is the gallery image.
+
+    [== $g->galleryImageLarge( undef, '', $someImage (.
+
+This uses imageDiv with the content provided by imageExifTables.
+
+=cut
+
+sub galleryImageLarge{
+	my $self=$_[0];
+	my $dir=$_[1];
+	my $gdir=$_[2];
+	my $image=$_[3];
+	
+	#blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+	
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+	#puts together the full path
+	my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+	
+	#gets the output URL
+	my $outputURL=$tg->outputURLget;
+	if ( ! defined( $outputURL ) ){
+		$self->{error}=41;
+		$self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#gets the source path
+    my $srcPath=$tg->srcPathGet;
+    if ( ! defined( $srcPath ) ){
+        $self->{error}=42;
+        $self->{errorString}='No source path specified';
+        $self->warn;
+        return undef;
+    }
+	
+	#puts together the image URL
+	my $imageURL='.toader-gallery/large/'.$gdir.'/'.$image;
+	$imageURL=~s/\/\/*/\//g;
+	$imageURL=$outputURL.$imageURL;
+	
+	#returns the URL for the source gallery image
+	my $srcURL=$self->gallerySrcURL( $dir, $gdir, $image );
+
+	my $imagePath=$srcPath.'/'.$gdir.'/'.$image;
+	$imagePath=~s/\/\/*/\//g;
+
+	#puts together the EXIF table
+	my $exifTables=$self->imageExifTables( $imagePath );
+	if ( $self->error ){
+		$self->warnString('imageExifTables failed');
+		return undef;
+	}
+
+	my $rendered=$self->imageDiv( $imageURL, $srcURL, undef, $exifTables );
+	if ( $self->error ){
+		$self->warnString('imageDiv failed');
+		return undef;
+	}
+	
+	return $rendered;
+}
+
+=head2 galleryImageSmall
+
+This generates the HTML for a small gallery image.
+
+Two arguments are taken. The first and optional one is the
+directory, which if not specified, it uses the Toader current
+directory. The second and required is the gallery directory for
+the image. The third and required is the gallery image.
+
+This invokes imageDiv, using the name of the image as the content.
+
+    [== $g->gallerImageSmall( undef, $gdir, $image ); ==]
+
+This uses imageDiv with the link URL being the link to the image details
+and the lower text being the image file name.
+
+=cut
+
+sub galleryImageSmall{
+	my $self=$_[0];
+	my $dir=$_[1];
+	my $gdir=$_[2];
+	my $image=$_[3];
+
+	#blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	#puts together the full path
+	my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+	#gets the output URL
+	my $outputURL=$tg->outputURLget;
+	if ( ! defined( $outputURL ) ){
+		$self->{error}=41;
+		$self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#puts together the image URL
+	my $imageURL='.toader-gallery/small/'.$gdir.'/'.$image;
+	$imageURL=~s/\/\/*/\//g;
+	$imageURL=$outputURL.$imageURL;
+
+	#returns the URL for the large gallery image
+	my $largeURL=$self->galleryLargeURL( $dir, $gdir, $image );
+
+	my $rendered=$self->imageDiv( $imageURL, $largeURL, undef, $image );
+	if ( $self->error ){
+		$self->warnString('imageDiv failed');
+		return undef;
+	}
+
+	return $rendered;
+}
+
+=head2 galleryLargeURL
+
+This returns the large URL for a directory image.
+
+Three arguments are accepted. The first is the Toader
+directory to for the gallery, if not specified it uses
+the Toader directory for the current object. The
+second is the relative gallery directory, which if not
+specified defaults to the '', the root gallery directory.
+The third is the image in that directory.
+
+    [== $g->galleryLargeURL; ==]
+
+=cut
+
+sub galleryLargeURL{
+    my $self=$_[0];
+    my $dir=$_[1];
+    my $gdir=$_[2];
+	my $image=$_[3];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+	#make sure there no multi /
+	$gdir=~s/\/\/*/\//g;
+
+    #puts together the full path
+    my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #gets the output URL
+    my $outputURL=$tg->outputURLget;
+    if ( ! defined( $outputURL ) ){
+        $self->{error}=41;
+        $self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+        $self->warn;
+        return undef;
+    }
+
+	my $url='.toader-gallery/html/'.$gdir.'/'.$image.'.html';
+	$url=~s/\/\/*/\//g;
+	return $outputURL.$url;
+}
+
+=head2 galleryLargeImageURL
+
+This returns the URL for the large gallery image.
+
+Three arguments are accepted. The first is the Toader
+directory to for the gallery, if not specified it uses
+the Toader directory for the current object. The
+second is the relative gallery directory, which if not
+specified defaults to the '', the root gallery directory.
+The third is the image in that directory.
+
+    [== $g->galleryLargeImageURL( undef, $gdir, $image ); ==]
+
+=cut
+
+sub galleryLargeImageURL{
+    my $self=$_[0];
+    my $dir=$_[1];
+    my $gdir=$_[2];
+    my $image=$_[3];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+    #puts together the full path
+    my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #gets the output URL
+    my $outputURL=$tg->outputURLget;
+    if ( ! defined( $outputURL ) ){
+        $self->{error}=41;
+        $self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+        $self->warn;
+        return undef;
+    }
+
+	my $url='.toader-gallery/large/'.$gdir.'/'.$image;
+	$url=~s/\/\/*/\//g;
+	return $outputURL.$url;
+}
+
+=head2 galleryLocationbar
+
+Two arguments taken for this. The first argument is required and
+it is the relative gallery directory, which if not specified
+defaults to the '', the root gallery directory. The second and
+optional is a image name, if any.
+
+    [== $g->galleryLocationbar; ==]
+
+This is largely useful for setting a locationSub for a gallery
+item. See L<Toader::Render::Gallery> for a example of that.
+
+=head3 Templates
+
+=head4 galleryLocationStart
+
+This starts the location bar insert.
+
+The default template is as below.
+
+    <h3>Gallery Location: 
+
+The variables below are passed to it.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=head4 galleryLocationPart
+
+This is a one of the gallery directories in the path to the one specified.
+
+    <a href="[== $url ==]">[== $text ==]</a>
+
+The variables below are passed to it.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+    gdir - The gallery directory this part is for.
+    url - The URL for that gallery directory.
+    text - The text(directory name) for that directory.
+
+=head4 galleryLocationJoin
+
+This joins the gallery parts together.
+
+     / 
+
+The variables below are passed to it.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=head4 galleryLocationEnd
+
+This ends the gallery location bar.
+
+The default template is as below.
+
+    </h3>
+    
+
+The variables below are passed to it.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=head4 galleryLocationImage
+
+This is appended if something is specified for a image.
+
+The default 
+
+    <h3>Image: <a href="[== $url ==]">[== $image ==]</a></h3>
+
+The variables below are passed to it.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+    gdir - The gallery directory this part is for.
+    url - The URL for that large(details) image page.
+    text - The text(directory name) for that directory.
+
+=cut
+
+sub galleryLocationbar{
+	my $self=$_[0];
+	my $gdir=$_[1];
+	my $image=$_[2];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+	
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+	#save this for later errors, if needed
+	my $gdirOrig=$gdir;
+
+	#makes sure it does not have a ./, which can safely be removed
+	$gdir=~s/^\.\///;
+	#make sure it does not start with a /, which can safely be removed
+	$gdir=~s/^\///;
+	#make sure it does not have any multie-/, which can safely be made one
+	$gdir=~s/\/\/*/\//g;
+	#make sure it does not end in a /, which can safely be removed
+	$gdir=~s/\/$//;
+
+	#if we get here and it still has a period, we have an issue
+	if ( $gdir=~/^\./ ){
+		$self->{error}=44;
+		$self->{errorString}='"'.$gdirOrig.'" can not be used as a relative gallery directory as it starts with a period';
+		$self->warn;
+		return undef;
+	}
+
+	#splits the gdir apart
+	my @gdirSplit=split( /\//, $gdir);
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $self->{dir} );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #renders the gallery link
+    my $start=$self->{t}->fill_in(
+        'galleryLocationStart',
+        {
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+			gdir=>$gdir,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+    #renders the gallery link
+    my $joiner=$self->{t}->fill_in(
+        'galleryLocationJoin',
+        {
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+			gdir=>$gdir,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	#the parts that will later be joined
+	my @parts;
+
+	#gets the url to use
+	my $url=$self->galleryDirURL( undef, undef );
+	if ( $self->error ){
+		$self->warnString('galleryDirURL errored');
+		return undef;
+	}
+
+	#renders the gallery link
+    my $rendered=$self->{t}->fill_in(
+        'galleryLocationPart',
+        {
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            gdir=>$gdir,
+			url=>$url,
+			text=>'root',
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+	push( @parts, $rendered );
+
+	#process each part
+	my $int=0;
+	my $currentGdir='';
+	while( defined( $gdirSplit[$int] ) ){
+		#gets the url to use
+		$currentGdir=$currentGdir.'/'.$gdirSplit[$int];
+		$currentGdir=~s/\/\/*/\//g;
+		$currentGdir=~s/^\///;
+
+		my $url=$self->galleryDirURL( undef, $currentGdir );
+		if ( $self->error ){
+			$self->warnString('galleryDirURL errored');
+			return undef;
+		}
+
+		#renders the gallery link
+		$rendered=$self->{t}->fill_in(
+			'galleryLocationPart',
+			{
+				obj=>\$self->{obj},
+				c=>\$self->{toader}->getConfig,
+				toader=>\$self->{toader},
+				self=>\$self,
+				g=>\$self,
+				gdir=>$gdir,
+				url=>$url,
+				text=>$gdirSplit[$int],
+			}
+			);
+		if ( $self->{t}->error ){
+			$self->{error}=10;
+			$self->{errorString}='Failed to fill in the template. error="'.
+				$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+			$self->warn;
+			return undef;
+		}
+		push( @parts, $rendered );
+		
+		$int++;
+	}
+
+	#renders the gallery link
+    my $end=$self->{t}->fill_in(
+        'galleryLocationEnd',
+        {
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            gdir=>$gdir,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	#handles a specified image...
+	my $imageLine='';
+	if ( defined( $image ) ){
+        my $url=$self->galleryLargeURL( undef, $gdir, $image );
+        if ( $self->error ){
+            $self->warnString('galleryDirURL errored');
+            return undef;
+        }
+
+		#renders the image link
+		$imageLine=$self->{t}->fill_in(
+			'galleryLocationImage',
+			{
+				obj=>\$self->{obj},
+				c=>\$self->{toader}->getConfig,
+				toader=>\$self->{toader},
+				self=>\$self,
+				g=>\$self,
+				gdir=>$gdir,
+				image=>$image,
+				url=>$url,
+			}
+			);
+		if ( $self->{t}->error ){
+			$self->{error}=10;
+			$self->{errorString}='Failed to fill in the template. error="'.
+				$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+			$self->warn;
+			return undef;
+		}
+		
+	}
+
+	return $start.join( $joiner, @parts ).$end.$imageLine;
+}
+
+=head2 gallerySmallImageURL
+
+This returns the URL for the small gallery image.
+
+Three arguments are accepted. The first is the Toader
+directory to for the gallery, if not specified it uses
+the Toader directory for the current object. The
+second is the relative gallery directory, which if not
+specified defaults to the '', the root gallery directory.
+The third is the image in that directory.
+
+    [== $g->gallerySmallImageURL; ==]
+
+=cut
+
+sub gallerySmallImageURL{
+    my $self=$_[0];
+    my $dir=$_[1];
+    my $gdir=$_[2];
+    my $image=$_[3];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+    #puts together the full path
+    my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #gets the output URL
+    my $outputURL=$tg->outputURLget;
+    if ( ! defined( $outputURL ) ){
+        $self->{error}=41;
+        $self->{errorString}='Failed to get the output URL for Toader::Gallery for "'.$dir.'"';
+        $self->warn;
+        return undef;
+    }
+
+    my $url='.toader-gallery/small/'.$gdir.'/'.$image;
+	$url=~s/\/\/*/\//g;
+	return $outputURL.$url;
+}
+
+=head2 galleryLink
+
+This links to a Toader::Gallery gallery.
+
+There are three optional arguments taken. The first is Toader
+directory this is for, if it is not specified, it assumes
+it is the current one. The second is the second one is the directory
+under it that it should link to, which defaults to the root of it
+if none is specified. The third is text of the link, which defaults
+to 'Gallery' if not specified.
+
+    [== $g->galleryLink( undef, $gdir, $text ); ==]
+
+The template used is 'linkGallery'. It is as below.
+
+    <a href="[== $url ==]">[== $text ==]</a>
+
+The variables passed are as below.
+
+    url - This is the relative URL for this.
+    text - This to use for with the link.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=cut
+
+sub galleryLink{
+    my $self=$_[0];
+	my $dir=$_[1];
+	my $gdir=$_[2];
+	my $text=$_[3];
+	
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	#default to the root if nothing is defined for the directory under the gallery
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+	#sets the default text if needed...
+	if ( ! defined( $text ) ){
+		$text='Gallery';
+	}
+
+	#gets the directory to use if none is specified
+	if ( ! defined( $dir ) ){
+		$dir=$self->{r2r};
+	}
+
+	#turns the relative directory into a full path and clean it up
+	$dir=$self->{toader}->getRootDir.'/'.$dir;
+	$dir=$self->{ph}->cleanup( $dir );
+	if ( $self->{ph}->error ){
+		$self->{error}=39;
+		$self->{errorString}='Failed to clean up the path for "'.$dir.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $dir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+	
+	#gets the output URL
+	my $outputURL=$tg->outputURLget;
+	if ( ! defined( $outputURL ) ){
+		$self->{error}=41;
+		$self->{errorString}='Failed to get the output directory for Toader::Gallery for "'.$dir.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#makes the URL for what is being linked to
+	my $link='.toader-gallery/html/'.$gdir;
+	$link=~s/\/\/*/\//g;
+	$link=$outputURL.$link;
+
+    #renders the gallery link
+    my $galleryLink=$self->{t}->fill_in(
+        'linkGallery',
+        {
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+			url=>$link,
+			text=>$text,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	return $galleryLink;
+}
+
+=head2 gallerySrcURL
+
+This returns the URL for the source gallery image.
+
+Three arguments are accepted. The first is the Toader
+directory to for the gallery, if not specified it uses
+the Toader directory for the current object. The
+second is the relative gallery directory, which if not
+specified defaults to the '', the root gallery directory.
+The third is the image in that directory.
+
+    [== $g->gallerySrcURL( undef, $gdir, $image ); ==]
+
+=cut
+
+sub gallerySrcURL{
+    my $self=$_[0];
+    my $dir=$_[1];
+    my $gdir=$_[2];
+    my $image=$_[3];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #gets the directory to use if none is specified
+    if ( ! defined( $dir ) ){
+        $dir=$self->{r2r};
+    }
+
+	if ( ! defined( $gdir ) ){
+		$gdir='';
+	}
+
+    #puts together the full path
+    my $toaderDir=$self->{toader}->getRootDir.'/'.$dir;
+
+	#gets a Gallery object
+	my $tg;
+	if ( ref( $self->{obj} ) ne 'Toader::Gallery' ){
+		$tg=Toader::Gallery->new;
+		$tg->dirSet( $toaderDir );
+		if ( $tg->error ){
+			$self->{error}=40;
+			$self->{errorString}='Failed to initialize Toader::Gallery';
+			$self->warn;
+			return undef;
+		}
+	}else{
+		$tg=$self->{obj};
+	}
+
+    #gets the output URL
+    my $srcURL=$tg->srcURLget;
+    if ( ! defined( $srcURL ) ){
+        $self->{error}=45;
+        $self->{errorString}='Failed to get the source URL for Toader::Gallery for "'.$dir.'"';
+        $self->warn;
+        return undef;
+    }
+
+	my $url=$gdir.'/'.$image;
+	$url=~s/\/\/*/\//g;
+	return $srcURL.$url;
+}
+
 =head2 hasDocs
 
 This returns true if the current directory has any
@@ -1736,6 +2786,30 @@ sub hasEntries{
 	return 0;
 }
 
+=head2 hasGallery
+
+This returns true if the current Toader directory has a gallery.
+
+This is checked for by seeing if the gallery config exists.
+
+=cut
+
+sub hasGallery{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    #returns true if there is a autodoc directory for the current Toader directory
+    if ( -f $self->{odir}.'/.toader/gallery.ini' ){
+        return 1;
+    }
+
+	return 0;
+}
+
 =head2 hasAnyDirs
 
 This returns true if there are either Toader sub directories or
@@ -1773,6 +2847,292 @@ sub hasAnyDirs{
 
 	#we are not at root then there is a directory that can be go gone to
 	return 1;
+}
+
+=head2 hashToTable
+
+This renders a hash to a table.
+
+Four arguments are taken. The first and required a hash
+reference to operate on. The second and optional is the title
+to use for the key column. The third and optional is the title
+to use for the value column. The fourth and optional is the
+CSS ID to use, which defaults to to "hashToTable".
+
+    my $table=$foo->hashToTable( \%hash );
+
+=head3 Templates
+
+=head4 hashToTableBegin
+
+This begins the table.
+
+The default is as below.
+
+    <table id="[== $cssID ==]">
+    
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    cssID - The CSS ID to use.
+
+=head4 hashToTableTitle
+
+This is a row that acts as the title row at the top of the table.
+
+It is only rendered if a title is defined for either key or value.
+
+The default is as below.
+
+      <tr id="[== $cssID ==]">
+        <td id="[== $cssID ==]"><bold>[== $keyTitle ==]</td>
+        <td id="[== $cssID ==]"><bold>[== $valueTitle ==]</bold></td>
+      </tr>
+    
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    cssID - The CSS ID to use.
+    keyTitle - The title to use for the key column.
+    valueTitle - The title to use for th value column.
+
+=head4 hashToTableRow
+
+This represents a row containing a key/value pair.
+
+The default is as below.
+
+      <tr id="[== $cssID ==]">
+        <td id="[== $cssID ==]"><bold>[== $key ==]</td>
+        <td id="[== $cssID ==]"><bold>[== $value ==]</bold></td>
+      </tr>
+
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    cssID - The CSS ID to use.
+    key - The key for the row.
+    value - The value for the row.
+
+=head4 hashToTableJoin
+
+This joins together the rendered rows.
+
+The default is as below.
+
+    
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    cssID - The CSS ID to use.
+
+=head4 hashToTableEnd
+
+This ends the table.
+
+The default is as below.
+
+    </table>
+
+The passed variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - This is the object that it was invoked for.
+    c - The L<Config::Tiny> object containing the Toader config.
+    toader - This is a L<Toader> object.
+    self - This the L<Toader::Render::General> object.
+    g - This the L<Toader::Render::General> object.
+    cssID - The CSS ID to use.
+
+=cut
+
+sub hashToTable{
+	my $self=$_[0];
+	my $hash=$_[1];
+	my $keyTitle=$_[2];
+	my $valueTitle=$_[3];
+	my $cssID=$_[4];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	#sets the default CSS ID if none is given
+	if( !defined( $cssID ) ){
+		$cssID='hashToTable';
+	}
+
+	#checks if it has a column title bar for either
+	my $titleRow='';
+	my $renderTitleRow=0;
+	if ( 
+		defined( $keyTitle ) ||
+		defined( $valueTitle )
+		){
+		if ( ! defined( $keyTitle ) ){
+			$keyTitle='';
+		}
+		if ( ! defined( $valueTitle ) ){
+			$valueTitle='';
+		}
+		$renderTitleRow=1;
+	}
+
+	#renders the title row if needed...
+	if ( $renderTitleRow ){
+		$titleRow=$self->{t}->fill_in(
+			'hashToTableTitle',
+			{
+				toDir=>$self->{toDir},
+				toFiles=>$self->{toFiles},
+				obj=>\$self->{obj},
+				c=>\$self->{toader}->getConfig,
+				toader=>\$self->{toader},
+				self=>\$self,
+				g=>\$self,
+				cssID=>$cssID,
+				keyTitle=>$keyTitle,
+				valueTitle=>$valueTitle,
+			}
+			);
+        if ( $self->{t}->error ){
+			$self->{error}=10;
+			$self->{errorString}='Failed to fill in the template. error="'.
+				$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+			$self->warn;
+			return undef;
+        }
+	}
+
+	#renders the top of the table
+	my $begin=$self->{t}->fill_in(
+            'hashToTableBegin',
+		{
+			toDir=>$self->{toDir},
+			toFiles=>$self->{toFiles},
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+			g=>\$self,
+			cssID=>$cssID,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+    #renders the bottom of the table
+    my $end=$self->{t}->fill_in(
+            'hashToTableEnd',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            cssID=>$cssID,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+	
+    #renders the row joiner
+    my $join=$self->{t}->fill_in(
+		'hashToTableJoin',
+        {
+            toDir=>$self->{toDir},
+            toFiles=>$self->{toFiles},
+            obj=>\$self->{obj},
+            c=>\$self->{toader}->getConfig,
+            toader=>\$self->{toader},
+            self=>\$self,
+            g=>\$self,
+            cssID=>$cssID,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	#renders each row
+	my @keys=sort {uc($a) cmp uc($b)} keys( %$hash );
+	my @rows;
+	my $int=0;
+	while( defined( $keys[$int] ) ){
+		my $row=$self->{t}->fill_in(
+			'hashToTableRow',
+			{
+				toDir=>$self->{toDir},
+				toFiles=>$self->{toFiles},
+				obj=>\$self->{obj},
+				c=>\$self->{toader}->getConfig,
+				toader=>\$self->{toader},
+				self=>\$self,
+				g=>\$self,
+				cssID=>$cssID,
+				key=>$keys[$int],
+				value=>$hash->{$keys[$int]},
+			}
+			);
+		if ( $self->{t}->error ){
+			$self->{error}=10;
+			$self->{errorString}='Failed to fill in the template. error="'.
+				$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+			$self->warn;
+			return undef;
+		}
+		push( @rows, $row );
+
+		$int++;
+	}
+
+	return $begin.$titleRow.join( $join, @rows ).$end;
 }
 
 =head2 hasSubDirs
@@ -1821,6 +3181,409 @@ sub hasSubDirs{
 	}
 	
 	return 0;
+}
+
+=head2 imageDiv
+
+This can be used for creating a captioned image.
+
+The takes five arguments. The first and required is the URL
+for the image. Second and optional is link to use for if the image
+is clicked on, which if not defined, the image will not be setup
+as a link. The third and optional is a caption to show above the
+image, which if left undefined defaults to ''. The fourth and
+optional is a caption to show below the image, which if left
+undefined defaults to ''. The fifth is the CSS ID to use,
+which if not defined defaults to 'imageDiv'. The sixth and
+optional is the alt test to use, which if not specified defaults
+to the provided image URL..
+
+    $g-imageDiv( $imageURL, $imageLink, , 'some caption below it');
+
+The default template, 'imageDiv' is as below.
+
+    <div id='$cssID'>
+      [== $above ==]
+      [== if ( defined( $link ) ){ return '    <a href="'.$link.'"'> }else{ return '' } ==]
+      <img src="[== $image ==]" alt="[== $alt ==]"/>
+      [== if ( defined( $link ) ){ return '    </a>' }else{ return '' } ==]<br>
+      [== $below ==]
+    </div>
+
+The variables passed are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+    image - This is the source URL to usse.
+	above - This is the caption above the image.
+    below - This is the caption below the image.
+    link - This is a optional link to link to if the image is clicked on.
+    alt - This is the alt text for the image.
+
+=cut
+
+sub imageDiv{
+    my $self=$_[0];
+	my $imageURL=$_[1];
+	my $imageLink=$_[2];
+	my $above=$_[3];
+	my $below=$_[4];
+	my $cssID=$_[5];
+	my $alt=$_[6];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	#error if we have no URL for the image
+	if ( ! defined( $imageURL ) ){
+		$self->{error}=36;
+		$self->{errorString}='No URL specified for the image';
+		$self->warn;
+		return undef;
+	}
+
+	#sets the default value for above if none is given
+	if ( ! defined( $above ) ){
+		$above='';
+	}
+
+	#sets the default value for below if none is given
+	if ( ! defined( $below ) ){
+		$below='';
+	}
+
+	#sets the default CSS ID if none is specified
+	if ( ! defined( $cssID ) ){
+		$cssID='imageDiv';
+	}
+
+	#sets alt to the URL if not specified
+	if ( ! defined( $alt ) ){
+		$alt=$imageURL;
+	}
+
+	my $rendered=$self->{t}->fill_in(
+            'imageDiv',
+            {
+                toDir=>$self->{toDir},
+                toFiles=>$self->{toFiles},
+                obj=>\$self->{obj},
+                c=>\$self->{toader}->getConfig,
+                toader=>\$self->{toader},
+                self=>\$self,
+                g=>\$self,
+                cssID=>$cssID,
+				image=>$imageURL,
+				above=>$above,
+				below=>$below,
+				alt=>$alt,
+				link=>$imageLink,
+            }
+		);
+        if ( $self->{t}->error ){
+            $self->{error}=10;
+            $self->{errorString}='Failed to fill in the template. error="'.
+                $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+            $self->warn;
+            return undef;
+        }
+	
+	return $rendered;
+}
+
+=head2 imageExifTables
+
+This returns the table of the tags for a image.
+
+This puts together a tables of the common EXIF tag groups.
+
+    [== $g->imageExifTables( $image ); ==]
+
+this methode ignores the EXIF tables listed below.
+
+    ExifTool
+    System
+    PrintIM
+    File
+    Printing
+    Copy1
+
+=head3 Templates
+
+=head4 imageExifTables
+
+This begins it.
+
+The default template is as below.
+
+    <b>Image: </b> [== $filename ==] <br/>
+    [== $tables ==]
+    
+
+The variables passed are as below.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+    filename - This is the name of the image file.
+    tables - This is the rendered tables from generated by the templates below.
+
+=head3 imageExifTablesBegin
+
+This begins the prefixes joining of the tables.
+
+The default template is blank.
+
+The variables passed are as below.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=head3 imageExifTablesGroup
+
+This is a EXIF tag group.
+
+The default table is as below.
+
+    <br />
+    <b>EXIF Tag Group: [== $group ==]</b>
+    [== $table ==]
+    <br />
+    
+The variables passed are as below.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+    group - This is the EXIF tag group.
+    table - This is the generated by hash2table.
+
+=head3 imageExifTablesJoin
+
+This joins the text rendered for imageExifTablesGroup
+
+The default template is blank.
+
+The variables passed are as below.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=head3 imageExifTablesEnd
+
+This ends the prefixes joining of the tables.
+
+The default template is blank.
+
+The variables passed are as below.
+
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::General> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+    obj - This is the object that Toader was initiated with.
+
+=cut
+
+sub imageExifTables{
+	my $self=$_[0];
+	my $image=$_[1];
+	
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+	
+	if ( ! defined( $image ) ){
+		$self->{error}=37;
+		$self->{errorString}='No image file specified';
+		$self->warn;
+		return undef;
+	}
+
+	if ( ! -f $image ){
+		$self->{error}=38;
+		$self->{errorString}='The specified image, "'.$image.'", does not exist';
+		$self->warn;
+		return undef;
+	}
+
+	my $filename=$image;
+	$filename=~s/.*\///;
+
+	my $et=Image::ExifTool->new;
+	$et->ExtractInfo( $image );
+
+	my @foundTags=$et->GetFoundTags;
+	
+	my %tags;
+	
+	my $int=0;
+	while( defined( $foundTags[$int] ) ){
+        my $value=$et->GetValue( $foundTags[$int] );
+        
+        if (ref $value eq 'SCALAR') {
+			$value='(unprintable value)'
+        }
+        
+        my @groups=$et->GetGroup( $foundTags[$int] );
+        
+        my $int2=0;
+        while( defined( $groups[$int2] ) ){
+			if ( $groups[$int2] eq "" ){
+				$groups[$int2]='""';
+			}
+			
+			if ( ( $groups[$int2] ne 'ExifTool' ) &&
+				 ( $groups[$int2] ne 'System' ) &&
+				 ( $groups[$int2] ne 'PrintIM' ) &&
+				 ( $groups[$int2] ne 'File' ) &&
+				 ( $groups[$int2] ne 'Printing' ) &&
+				 ( $groups[$int2] ne 'Copy1' )
+				){
+				if ( ! defined( $tags{ $groups[$int2] } ) ){
+					$tags{ $groups[$int2] }={};
+				}
+				
+				$tags{ $groups[$int2] }{ $foundTags[$int] }=$value;
+			}
+			
+			$int2++;
+        }
+
+        $int++;
+	}
+
+	my @groups=sort( keys( %tags ) );
+
+	my @renderedGroups;
+
+	#puts together the Composite table if needed
+	$int=0;
+	while ( defined( $groups[$int] ) ){
+		my $table=$self->hashToTable( $tags{ $groups[$int] } );
+		if ( $self->error ){
+           $self->warnString('Failed to convert the hash to a table for "'.$groups[$int].'"');
+            return undef;
+        }
+        #renders the table
+        my $rendered=$self->{t}->fill_in(
+            'imageExifTablesGroup',
+            {
+                obj=>\$self->{obj},
+                c=>\$self->{toader}->getConfig,
+                toader=>\$self->{toader},
+                self=>\$self,
+                table=>$table,
+				group=>$groups[$int],
+            }
+            );
+        if ( $self->{t}->error ){
+            $self->{error}=10;
+            $self->{errorString}='Failed to fill in the template. error="'.
+                $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+            $self->warn;
+            return undef;
+        }
+		push( @renderedGroups, $rendered );
+		
+		$int++;
+	}
+
+	#renders the table joiner
+	my $begin=$self->{t}->fill_in(
+		'imageExifTablesBegin',
+		{
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#renders the table joiner
+	my $join=$self->{t}->fill_in(
+		'imageExifTablesJoin',
+		{
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+	#renders the table joiner
+	my $end=$self->{t}->fill_in(
+		'imageExifTablesEnd',
+		{
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+	my $joinedtables=$begin.join('', @renderedGroups ).$end;
+
+	#renders the tables together
+    my $rendered=$self->{t}->fill_in(
+        'imageExifTables',
+        {
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			toader=>\$self->{toader},
+			self=>\$self,
+			tables=>$joinedtables,
+			filename=>$filename,
+        }
+        );
+    if ( $self->{t}->error ){
+        $self->{error}=10;
+        $self->{errorString}='Failed to fill in the template. error="'.
+            $self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+	return $rendered;
 }
 
 =head2 lastEntries
@@ -2127,6 +3890,9 @@ This builds the side bar list of directories.
 No options are taken.
 
     $g->listDirs;
+
+This does not currently play nicely with any thing that will
+set fullURL.
 
 =head3 Templates
 
@@ -2668,6 +4434,10 @@ sub locationbar{
 	my $url=$self->{b2r};
 	$url=~s/\/\/*/\//g;
 
+	if ( $self->{fullURL} ){
+		$url=$self->{url};
+	}
+
 	#does the initial link to the root directory
 	$rendered=$rendered.$self->{t}->fill_in(
 		'locationPart',
@@ -2753,6 +4523,56 @@ sub locationbar{
 	}
 
 	return $rendered;
+}
+
+=head2 locationSubSet
+
+This returns what ever has been set for the location sub via
+L<Toader::Render::General>->locationSubSet.
+
+    [== $g->locationSub ==]
+
+=cut
+
+sub locationSub{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+    return $self->{locationSub};
+}
+
+=head2 locationSub
+
+This sets the location sub.
+
+One argument is taken and that is what to set it to.
+
+If not defined, '' is used.
+
+    [== $g->locationSubSet( $whatever ) ==]
+
+=cut
+
+sub locationSubSet{
+    my $self=$_[0];
+	my $locationSub=$_[1];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	if ( ! defined( $locationSub ) ){
+		$locationSub='';
+	}
+
+    $self->{locationSub}=$locationSub;
+	
+	return 1;
 }
 
 =head2 or2r
@@ -3033,9 +4853,15 @@ sub pageSummaryLink{
 		return undef;
 	}
 
-	#creates the url and cleans it up
-	my $url=$self->{toDir}.'/.pages/summary.html';
-	$url=~s/\/\/*/\//g;
+	my $url;
+	if ( $self->{fullURL} ){
+		$url=$self->{r2r}.'/.pages/summary.html';
+		$url=~s/\/\/*/\//g;
+		$url=$self->{url};
+	}else{
+		$url=$self->{toDir}.'/.pages/summary.html';
+		$url=~s/\/\/*/\//g;
+	}
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -3157,9 +4983,14 @@ sub plink{
 		return undef;
 	}
 
-	#add the toDir to it
-	$dir=$self->{toDir}.'/'.$dir.'/.pages/'.$page.'/';
-	$dir=~s/\/\/*/\//g;
+	if ( $self->{fullURL} ){
+		$dir=$dir.'/.pages/'.$page.'/';
+		$dir=~s/\/\/*/\//g;
+		$dir=$self->{url}.$dir;
+	}else{
+		$dir=$self->{toDir}.'/'.$dir.'/.pages/'.$page.'/';
+		$dir=~s/\/\/*/\//g;
+	}
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -3249,8 +5080,13 @@ sub rlink{
 	}
 
 	#creates the url and cleans it up
-	my $url=$self->{b2r};
-	$url=~s/\/\/*/\//g;
+	my $url='';
+	if ( $self->{fullURL} ){
+		$url=$self->{url};
+	}else{
+		$url=$self->{b2r};
+		$url=~s/\/\/*/\//g;
+	}
 
 	#render it
 	my $rendered=$self->{t}->fill_in(
@@ -3561,6 +5397,50 @@ Failed to read the page.
 
 The file specified for the AutoDoc link starts with a "../".
 
+=head2 35
+
+No URL specified in in the Toader Config.
+
+=head2 36
+
+No URL specified for the image.
+
+=head2 37
+
+No image file specified.
+
+=head2 38
+
+The specified image does not exist.
+
+=head2 39
+
+Path cleanup failed.
+
+=head2 40
+
+Failed to initialize Toader::Gallery.
+
+=head2 41
+
+Undefined outputURL for Toader::Gallery.
+
+=head2 42
+
+No source path specified for Toader::Gallery.
+
+=head2 43
+
+No source URL specified for Toader::Gallery.
+
+=head2 44
+
+The relative gallery directory contains a period.
+
+=head2 45
+
+No source URL specified for L<Toader::Gallery>.
+
 =head1 AUTHOR
 
 Zane C. Bowers-Hadley, C<< <vvelox at vvelox.net> >>
@@ -3603,7 +5483,7 @@ L<http://search.cpan.org/dist/Toader/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011. Zane C. Bowers-Hadley.
+Copyright 2012. Zane C. Bowers-Hadley.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

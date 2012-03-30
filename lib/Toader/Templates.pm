@@ -14,11 +14,11 @@ Toader::Templates - This handles fetching Toader templates.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.1.0';
 
 =head1 SYNOPSIS
 
@@ -65,8 +65,6 @@ sub new{
 		}
 		$self->{dir}=$args{dir};
 	}
-
-
 
 	return $self;
 }
@@ -148,10 +146,7 @@ The returned string is the filled out template.
 sub fill_in{
 	my $self=$_[0];
 	my $name=$_[1];
-	my %hash;
-	if ( defined( $_[2] ) ){
-		%hash=%{ $_[2] };
-	}
+	my $hash=$_[2];
 
 	if( ! $self->errorblank ){
 		return undef;
@@ -171,7 +166,7 @@ sub fill_in{
 		return undef;
 	}
 
-	return $self->fill_in_string( $template, \%hash );
+	return $self->fill_in_string( $template, $hash );
 }
 
 =head2 fill_in_string
@@ -193,10 +188,7 @@ The returned string is the filled out template.
 sub fill_in_string{
 	my $self=$_[0];
 	my $string=$_[1];
-	my %hash;
-	if ( defined( $_[2] ) ){
-		%hash=%{ $_[2] };
-	}
+	my $hash=$_[2];
 
 	if( ! $self->errorblank ){
 		return undef;
@@ -216,7 +208,7 @@ sub fill_in_string{
 		);
 
 	my $rendered=$template->fill_in(
-		HASH=>\%hash,
+		HASH=>$hash,
 		);
 
 	if ( ! defined ( $rendered ) ){
@@ -390,9 +382,50 @@ sub getTemplate{
 	return $template;
 }
 
+=head2 getTemplateDefault
+
+This finds a default template and then returns it.
+
+One arguement is required and it is the template name.
+
+    my $template=$foo->getTemplate($templateName);
+    if($foo->error){
+        warn('Error:'.$foo->error.': '.$foo->errorString);
+    }
+
+=cut
+
+sub getTemplateDefault{
+    my $self=$_[0];
+    my $name=$_[1];
+
+    if (!$self->errorblank){
+        return undef;
+    }
+
+    #make sure a template name is specified
+    if ( ! defined( $name ) ){
+        $self->{error}=9;
+        $self->{errorString}='No template name specified';
+        $self->warn;
+        return undef;
+	}
+
+    #tries to fetch the default template
+    my $template=$self->{defaults}->getTemplate($name);
+    if ( ! defined( $template ) ) {
+		$self->{error}=6;
+		$self->{errorString}='No default template';
+		$self->warn;
+		return undef;
+    }
+	
+    return $template;
+}
+
 =head2 listTemplates
 
-This lists the various themes in the directory.
+This lists the various templates in the directory.
 
     my @templates=$foo->listTemplates;
     if($foo->error){
@@ -430,7 +463,7 @@ sub listTemplates{
 
 	#makes sure the template exists and if it does not, return only having the default
 	if (! -d $dir) {
-		return ['default'];
+		return;
 	}
 
 	#lists each theme
@@ -444,7 +477,28 @@ sub listTemplates{
 	my @templates=grep( { -f $dir.'/'.$_ } readdir($dh) );
 	close($dh);
 	
-	return @templates;
+	return \@templates;
+}
+
+=head2 listDefaultTemplates
+
+This lists the various templates in the directory.
+
+    my @templates=$foo->listTemplates;
+    if($foo->error){
+        warn('Error:'.$foo->error.': '.$foo->errorString);
+    }
+
+=cut
+
+sub listDefaultTemplates{
+    my $self=$_[0];
+
+    if (!$self->errorblank){
+        return undef;
+    }
+
+	return $self->{defaults}->listTemplates;
 }
 
 =head2 templateNameCheck
@@ -518,6 +572,11 @@ Errored filling out the template string.
 =head2 8
 
 Nothing specified for the template string.
+
+=head2 9
+
+The Toader::Gallery object is not usable according
+to the usable method.
 
 =head1 AUTHOR
 

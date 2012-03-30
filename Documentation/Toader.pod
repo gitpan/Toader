@@ -27,12 +27,13 @@ Third, it must be able to contain a '.toader' directory.
 Below is a posibility of what a '.toader' directory may contain as well as
 the mapping to the relavent documentation.
 
-    entries/ - Entry.pod
-    pages/ - Pages.pod
-    index - Directory.pod
-    config.ini - Config.pod
-    templates/ - Templates.pod
     autodoc/ - AutoDoc.pod
+    config.ini - Config.pod
+    entries/ - Entry.pod
+    gallery.ini - Gallery.pod
+    index - Directory.pod
+    pages/ - Pages.pod
+    templates/ - Templates.pod
 
 =head1 Common Objects
 
@@ -43,9 +44,12 @@ directories under the L<Toader> directory.
 
 The related modules are as below.
 
-    L<Toader::AutoDoc>
-    L<Toader::Render::AutoDoc>
-    L<Toader::Render::AutoDoc::Cleanup>
+
+L<Toader::AutoDoc>
+
+L<Toader::Render::AutoDoc>
+
+L<Toader::Render::AutoDoc::Cleanup>
 
 =head2 Directory
 
@@ -54,10 +58,14 @@ page for a directory.
 
 The related modules are as below.
 
-    L<Toader::Directory>
-    L<Toader::Render::Directory>
-    L<Toader::Render::Directory::Cleanup>
-    L<Toader::Render::Directory::backends::html>
+
+L<Toader::Directory>
+
+L<Toader::Render::Directory>
+
+L<Toader::Render::Directory::Cleanup>
+
+L<Toader::Render::Directory::backends::html>
 
 =head2 Entry
 
@@ -67,10 +75,23 @@ By default the last entries page will the 25 newest articles.
 
 The related modules are as below.
 
-    L<Toader::Entry>
-    L<Toader::Render::Entry>
-    L<Toader::Render::Entry::Cleanup>
-    L<Toader::Render::Entry::backends::html>
+L<Toader::Entry>
+
+L<Toader::Render::Entry>
+
+L<Toader::Render::Entry::Cleanup>
+
+L<Toader::Render::Entry::backends::html>
+
+=head2 Gallery
+
+This is handles for Toader.
+
+The related modules are as below.
+
+L<Toader::Gallery>
+
+L<Toader::Render::Gallery>
 
 =head2 Page
 
@@ -79,10 +100,13 @@ etc.
 
 The related modules are as below.
 
-    L<Toader::Page>
-    L<Toader::Render::Page>
-    L<Toader::Render::Page::Cleanup>
-    L<Toader::Render::Page::backends::html>
+L<Toader::Page>
+
+L<Toader::Render::Page>
+
+L<Toader::Render::Page::Cleanup>
+
+L<Toader::Render::Page::backends::html>
 
 =head1 Rendering
 

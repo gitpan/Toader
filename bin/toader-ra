@@ -33,12 +33,13 @@ use Toader::Page::Manage;
 use Toader::Entry::Manage;
 use Toader::AutoDoc;
 use Toader::Render::CSS;
+use Toader::Gallery;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-ra 0.0.0\n";
+	print "toader-ra 0.1.0\n";
 }
 
 #print help
@@ -122,6 +123,36 @@ while ( defined( $dirs[$int] ) ){
 		}
 
 	}
+
+	#renders the gallery stuff if needed
+	if ( -f $dirs[$int].'/.toader/gallery.ini'){
+		my $gallery=Toader::Gallery->new;
+		$gallery->dirSet( $dirs[$int] );
+		if ( $gallery->error ){
+			warn('toader-ra: Failed to set the directory for Toader::Gallery to "'.$dirs[$int]
+				 .'". error="'.$gallery->error.'" errorString="'.$gallery->errorString.'"');
+		}else{
+			$render->renderObj( $gallery );
+            warn('toader-ra: Failed to render the gallery for "'.
+                 $dirs[$int].'". error="'.$render->error.
+                 '" errorString="'.$render->errorString.'"');
+		}
+	}
+
+    #renders the gallery stuff if needed
+    if ( -d $dirs[$int].'/.toader/autodoc/'){
+        my $ad=Toader::AutoDoc->new;
+        $ad->dirSet( $dirs[$int] );
+        if ( $ad->error ){
+            warn('toader-ra: Failed to set the directory for Toader::AutoDoc to "'.$dirs[$int]
+                 .'". error="'.$ad->error.'" errorString="'.$ad->errorString.'"');
+        }else{
+            $render->renderObj( $ad );
+            warn('toader-ra: Failed to render documentation for "'.
+                 $dirs[$int].'". error="'.$render->error.
+                 '" errorString="'.$render->errorString.'"');
+        }
+    }
 
 	#sets the directory for the entry manage object
 	$em->setDir( $dirs[$int] );

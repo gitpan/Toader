@@ -14,7 +14,7 @@ use File::Copy;
 
 =head1 NAME
 
-Toader::Render::AutoDoc - This renders a Toader::Page object.
+Toader::Render::AutoDoc - This renders a Toader::AutoDoc object.
 
 =head1 VERSION
 

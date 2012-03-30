@@ -130,7 +130,23 @@ sub renderCSS{
 		return undef;
 	}
 
-	return $css;
+    my $cssInclude=$self->{templates}->fill_in( 'cssInclude',
+                                         {
+                                             c=>\$config,
+                                             toader=>\$self->{toader},
+                                         });
+
+    if ( $self->{templates}->error ){
+        $self->{error}=5;
+        $self->{errorString}='Failed to render the template. error="'.
+            $self->{templates}->error.'" errorString="'.
+            $self->{templates}->errorString.'"';
+        $self->warn;
+        return undef;
+    }
+
+
+	return $css.$cssInclude;
 }
 
 =head2 render

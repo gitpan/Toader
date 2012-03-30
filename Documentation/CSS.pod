@@ -3,7 +3,7 @@
 Toad uses CSS, by default, for the layout and various
 stying stuff.
 
-The default template is as below.
+The default template, 'css', is as below.
 
     div{
       border: 0px solid;
@@ -62,13 +62,15 @@ The default template is as below.
       border: 1px solid;
      }
 
+There is also a additional template, 'cssInclude'. This is by default
+blank. The purpose of this is to allow people to add their own additions
+with out touching the default config.
+
 =head1 RENDERING
 
-The first step is to pull the CSS template. First it will check
-$toaderRoot.'/.toader/css' exists and if it does it will use it and use
-that instead of the default.
+Both templates are rendered and then 'cssInclude' joined after 'css'.
 
-It is rendered to $outputDir.'/toader.css' .
+It is outputted to $outputDir.'/toader.css' .
 
 The variables below are passed to it when rendering the template.
 

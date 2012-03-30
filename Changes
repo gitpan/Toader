@@ -1,5 +1,71 @@
 Revision history for Toader
 
+0.2.0	 2012-03-30/06:20
+		 -Add POD backends.
+		 -Minor POD corrections.
+		 -Expand upon the config documentation.
+		 -Add url to the config.
+		 -Add full/relative URL option to Toader::Render::General.
+		 -Add the methods below to Toader::Render::General.
+		 	  galleryDirURL
+			  galleryImageLarge
+			  galleryImageSmall
+			  galleryLargeURL
+			  galleryLargeImageURL
+			  galleryLocationbar
+			  gallerySmallImageURL
+			  galleryLink
+			  gallerySrcURL
+			  hasGallery
+			  hashToTable
+			  imageDiv
+			  imageExitTables
+			  locationSub
+			  locationSubSet
+		 -Add the modules below.
+		 	  Toader::Gallery
+			  Toader::Render::Gallery
+		 -Add non-relative URL capabilities to Toader::Render::General.
+		 -Correct error handling for Toader::Templates::Defaults->getTemplate.
+		 -Update bin/toader-ra to support everything.
+		 -Add publish support to the modules below.
+		 	  Toader::Entry
+			  Toader::Page
+		 -Misc documentation correction.
+		 -Some double slash cleanup.
+		 -Add cssInclude, allowing custamization with out touching the default
+		 	  CSS template.
+		 -Add gallery and autodoc support to bin/toader-autodoc.
+		 -Add the methdods below to Toader::Templates::Defaults.
+		 	  exists
+			  listTemplates
+		 -Add the methods below to Toader::Templates.
+		 	  getTemplateDefault
+			  listDefaultTemplates
+			  setTemplate
+		 -Add the templates listed below.
+		 	  cssInclude
+		 	  galleryDir
+		 	  gallerySmallImage
+		 	  gallerySmallImageBegin
+			  gallerySmallImageJoin
+			  gallerySmallImageEnd
+			  galleryLocationStart
+			  galleryLocationPart
+			  galleryLocationJoin
+			  galleryLocationEnd
+		 	  galleryLocationImage
+		 	  hashToTableBegin
+			  hashToTableTitle
+			  hashToTableRow
+			  hashToTableJoin
+			  hashToTableEnd
+			  imageDiv
+		 -Adds the scripts below.
+		 	  bin/toader-css
+			  bin/toader-gallery
+			  bin/toader-temp			  
+
 0.1.0	 2012-02-02/14:10
 		 -Add Toader::AutoDoc, Toader::Render::AutoDoc, and
 		 	  Toader::Render::AutoDoc::Cleanup, Documentation/AutoDoc.pod 
@@ -13,13 +79,13 @@ Revision history for Toader
 		 	  adlink
 			  adListLink
 		 -Change content float method to none. This allows it to wrap around the
-		 	menu. Avoiding misc formatting issues.
+		 	  menu. Avoiding misc formatting issues.
 		 -Correct date processessing.
 		 -Note security related issues with Toader.
 		 -Note VCS integration.
 		 -Misc. cleanups.
 		 -Rework the page template so the HR is only present in the sidebar if there
-		 		 is more than one section.
+		 	  is more than one section.
 		 -Add the templates listed below.
 		 	  autodocLink
 			  linkAutoDocList

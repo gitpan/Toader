@@ -1,34 +1,35 @@
-package Toader::Render::Entry::backends::html;
+package Toader::Render::Page::backends::pod;
 
 use warnings;
 use strict;
 use base 'Error::Helper';
+use Pod::Simple::HTML;
+use File::Temp;
+use File::Spec;
 
 =head1 NAME
 
-Toader::Render::Entry::backends::html - This handles the html backend stuff for Toader::Render::Entry.
+Toader::Render::Page::backends::pod - This handles the POD backend stuff for Toader::Page::Entry.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.0.0
 
 =cut
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-    use Toader::Render::Entry::backends::html;
+    use Toader::Render::Page::backends::pod;
     
-    my $renderer=Toader::Render::Directory::backends::html->new({ toader=>$toader, obj=>$entryObj });
+    my $renderer=Toader::Render::Page::backends::pod->new({ toader=>$toader, obj=>$pageObj });
     my $rendered;
     if ( $renderer->error ){
         warn( 'Error:'.$renderer->error.': '.$renderer->errorString );
     }else{
         $rendered=$renderer->render($torender);
     }
-
-While this will error etc, this module is basically a pass through as HTML the native.
 
 =head1 METHODS
 
@@ -40,13 +41,13 @@ This initiates the object.
 
 =head4 obj
 
-This is the L<Toader::Entry> object to render.
+This is the L<Toader::Page> object to render.
 
 =head4 toader
 
 This is the L<Toader> object to use.
 
-	my $foo=Toader::Render::Entry::backends::html->new(\%args);
+	my $foo=Toader::Render::Page::backends::pod->new(\%args);
     if($foo->error){
         warn('error: '.$foo->error.":".$foo->errorString);
     }
@@ -66,18 +67,18 @@ sub new{
 			  };
 	bless $self;
 
-	#make sure we have a Toader::Entry object.
+	#make sure we have a Toader::Page object.
 	if ( ! defined( $args{obj} ) ){
 		$self->{perror}=1;
 		$self->{error}=1;
-		$self->{errorString}='Nothing defined for the Toader::Directory object';
+		$self->{errorString}='Nothing defined for the Toader::Page object';
 		$self->warn;
 		return $self;
 	}
-	if ( ref( $args{obj} ) ne 'Toader::Entry' ){
+	if ( ref( $args{obj} ) ne 'Toader::Page' ){
         $self->{perror}=1;
         $self->{error}=1;
-        $self->{errorString}='The specified object is not a Toader::Entry object, but a "'.
+        $self->{errorString}='The specified object is not a Toader::Page object, but a "'.
 			ref( $args{obj} ).'"';
  		$self->warn;
 		return $self;
@@ -88,7 +89,7 @@ sub new{
 	if( ! $self->{obj}->errorblank ){
 		$self->{perror}=1;
 		$self->{error}=3;
-		$self->{errorString}='The Toader::Entry object has a permanent error set';
+		$self->{errorString}='The Toader::Page object has a permanent error set';
 		$self->warn;
 		return $self;
 	}
@@ -124,7 +125,7 @@ sub new{
     if( ! defined( $self->{obj}->dirGet ) ){
         $self->{perror}=1;
         $self->{error}=5;
-        $self->{errorString}='The Toader::Entry object does not have a directory set';
+        $self->{errorString}='The Toader::Page object does not have a directory set';
         $self->warn;
         return $self;
     }
@@ -136,7 +137,7 @@ sub new{
 
 This renders the object.
 
-No arguments are taken.
+One argument is taken and that is what is to be rendered.
 
 =cut
 
@@ -155,16 +156,51 @@ sub render{
 		return undef;
 	}
 
-	
+	#create a tmp file
+	my $tmpfile = File::Temp::tempnam( File::Spec->tmpdir, 'tdat' );
+	my $fh;
+	if ( ! open( $fh, '>', $tmpfile ) ){
+		$self->{error}=7;
+		$self->{errorString}='Failed to open a temp file, "'.$tmpfile.'",';
+		$self->warn;
+		return undef;
+	}
+	print $fh $torender;
+	close( $fh );
 
-	return $torender;
+	#print `ls $tmpfile; cat $tmpfile`;
+
+	#renders it
+	my $p = Pod::Simple::HTML->new;
+	my $html;
+	$p->index(1);
+	$p->output_string(\$html);
+	$p->parse_file( $tmpfile );
+
+	#unlinks the file
+	if (! unlink( $tmpfile ) ){
+		$self->{error}=8;
+		$self->{errorString}='Failed to unlink "'.$tmpfile.'"';
+		$self->warn;
+		return undef;		
+	}
+
+	#makes sure something is returned for html
+	if (! defined( $html ) ){
+		$self->{error}=9;
+		$self->{errorString}='Failed to render the html';
+		$self->warn;
+		return undef;		
+	}
+
+	return $html;
 }
 
 =head1 ERROR CODES
 
 =head2 1
 
-No L<Toader::Entry> object specified.
+No L<Toader::Page> object specified.
 
 =head2 2
 
@@ -172,7 +208,7 @@ No L<Toader> object specified.
 
 =head2 3
 
-The L<Toader::Entry> object has a permanent error set.
+The L<Toader::Page> object has a permanent error set.
 
 =head2 4
 
@@ -180,11 +216,23 @@ The L<Toader> object has a permanent error set.
 
 =head2 5
 
-The L<Toader::Entry> object does not have a directory set.
+The L<Toader::Page> object does not have a directory set.
 
 =head2 6
 
 Nothing specified to render.
+
+=head2 7
+
+Failed to open a temp file.
+
+=head2 8
+
+Failed to unlink the the temporary file.
+
+=head2 9
+
+Failed to render the HTML.
 
 =head1 AUTHOR
 
@@ -200,7 +248,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Toader::Render::Entry::backends::html
+    perldoc Toader::Render::Page::backends::pod
 
 
 You can also look for information at:
@@ -242,4 +290,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Toader::Render::Entry::backends::html
+1; # End of Toader::Render::Page::backends::pod
