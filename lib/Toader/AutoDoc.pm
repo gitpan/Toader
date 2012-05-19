@@ -199,7 +199,16 @@ sub findDocs{
 		}
 	}
 
-	return @toreturn;
+	#removes any potential dupes...
+    my %found;
+    $int=0;
+	while ( defined( $toreturn[$int] ) ){
+		$found{ $toreturn[$int] }='';
+
+		$int++;
+	}
+
+	return keys(%found);
 }
 
 =head2 pathAdd

@@ -376,8 +376,8 @@ sub render{
 			#convert to HTML from POD
 			my $p2h=Pod::Simple::HTML->new;
 			my $html;
-			my $p->output_string(\$html);
-			$p->parse_file($copyFrom);
+			$p2h->output_string(\$html);
+			$p2h->parse_file($copyFrom);
 
 			#open the $copyTo and write it out
 			my $fh;

@@ -15,11 +15,11 @@ Toader::Entry - This holds a blog/article/whatever entry.
 
 =head1 VERSION
 
-Version 0.0.2
+Version 0.0.3
 
 =cut
 
-our $VERSION = '0.0.2';
+our $VERSION = '0.0.3';
 
 =head1 SYNOPSIS
 
@@ -116,6 +116,18 @@ sub new{
 
 	if (!defined($args{publish})) {
 		$args{publish}='1';
+	}
+
+	#makes sure the publish value is 
+	if (
+		( $args{publish} ne "0" ) &&
+		( $args{publish} ne "1" )
+		){
+		$self->{perror}=1;
+		$self->{error}=19;
+		$self->{errorString}='"'.$args{publish}.'" is not a recognized boolean value';
+		$self->warn;
+		return $self;
 	}
 
 	if ( !defined( $args{summary} ) ){
@@ -297,6 +309,19 @@ sub newFromString{
 	#make sure we have publish set
 	if (!defined( $mime->header( "publish" ) )) {
 		$mime->header_set(publish=>'1');
+	}
+
+	#makes sure it is a recognized boolean value
+	if (
+		( $mime->header( "publish" ) ne "0" ) &&
+		( $mime->header( "publish" ) ne "1" )
+		){
+		$self->{perror}=1;
+		$self->{error}=19;
+		$self->{errorstring}='"'.$mime->header( "publish" ).
+			'" is not a recognized boolean value';
+		$self->warn;
+		return $self;
 	}
 	
 	$self->{mime}=$mime;
@@ -624,7 +649,24 @@ sub publishGet{
 		return undef;
 	}
 
-	return $self->{mime}->header('publish');
+	my $publish=$self->{mime}->header('publish');
+	
+	#return the default if none is specified
+	if ( ! defined( $publish ) ){
+		return "1";
+	}
+
+	if (
+		( $publish ne "0" ) &&
+		( $publish ne "1" )
+		){
+		$self->{error}=19;
+		$self->{errorString}='"'.$publish.'" is not a recognized boolean value';
+		$self->warn;
+		return undef;
+	}
+
+	return $publish;
 }
 
 =head2 publishSet
@@ -1350,7 +1392,8 @@ No file specified.
 
 =head2 19
 
-Invalid publish value.
+Invalid publish value. It is not a recognized boolean value of
+either "0" or "1".
 
 =head1 AUTHOR
 

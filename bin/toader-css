@@ -35,7 +35,7 @@ $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-css 0.0.0\n";
+	print "toader-css 0.1.0\n";
 }
 
 #print help
@@ -46,7 +46,9 @@ sub main::HELP_MESSAGE {
 		"\n".
 		"Actions:\n".
 		"edit - Edits the CSS template.\n".
+		"editi - Edits the CSS include template.\n".
 		"get - Prints out the specified template.\n".
+		"geti - Prints out the CSS include template.\n".
         "getd - Prints out the specified default template.\n".
 		"render - Renders the CSS\n";
 }
@@ -90,6 +92,17 @@ if ( $opts{a} eq 'edit' ){
 	$tt->setTemplate('css', $template);
 }
 
+if ( $opts{a} eq 'editi' ){
+    my $template=$tt->getTemplate( 'cssInclude' );
+    if ( $tt->error ){
+        warn('toader-temp:'.$tt->error.': Failed to fetch the specified template');
+        exit $tt->error;
+    }
+    my $fh=solicit($template);
+    $template=join( '', <$fh> );
+    $tt->setTemplate('css', $template);
+}
+
 if ( $opts{a} eq 'get' ){
 	my $template=$tt->getTemplate( 'css' );
 	if ( $tt->error ){
@@ -99,6 +112,17 @@ if ( $opts{a} eq 'get' ){
 	print $template;
 	exit 0;
 }
+
+if ( $opts{a} eq 'geti' ){
+    my $template=$tt->getTemplate( 'cssInclude' );
+    if ( $tt->error ){
+        warn('toader-temp:'.$tt->error.': Failed to fetch the specified template');
+        exit $tt->error;
+    }
+    print $template;
+    exit 0;
+}
+
 
 if ( $opts{a} eq 'getd' ){
     my $template=$tt->getTemplateDefault( 'css' );

@@ -215,18 +215,11 @@ tr#hashToTable{
                 return "";
             }
         ==]
-		[==
-            if( $g->hasAnyDirs ){
-                return "<hr>\n<h3>Directories</h3>";
-            }else{
-                return "";
-            }
-        ==]
 		[== 
 			if ( $g->atRoot ){
 				return "";
 			}
-			return $g->rlink("Go To The Root")."		<br>\n		";
+			return $g->rlink("Go To The Root")."		<br>\n		".
 			       $g->upOneDirLink."		<br>\n		<br>";
 		==]
 

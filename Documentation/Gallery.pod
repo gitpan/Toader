@@ -157,10 +157,10 @@ template used is 'pageGallery' and the default is as below.
 Below is what is passed to it, for both updateIndex and updateDetails.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The current gallery directory.
     content - The content for the page.
@@ -213,10 +213,10 @@ The default template is blank.
 The arguments passed to it are as below.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The current gallery directory.
 
@@ -231,10 +231,10 @@ The default template is as below.
 The arguments passed to it are as below.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The gallery directory being linked to.
     link - This is the HTML for the gdir being linked to.
@@ -250,10 +250,10 @@ The default template is as below.
 The arguments passed to it are as below.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The current gallery directory.
     image - The current image in the current gdir.
@@ -270,10 +270,10 @@ The default template is as below.
 The arguments passed to it are as below.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The current gallery directory.
 
@@ -286,10 +286,10 @@ The default template is blank.
 The arguments passed to it are as below.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
     dir - The R2R path for the Toader directory the gallery is for.
     gdir - The current gallery directory.
 

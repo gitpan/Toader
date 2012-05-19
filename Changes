@@ -1,5 +1,13 @@
 Revision history for Toader
 
+0.3.0	 2012-05-19/16:00
+		 -Toader::Render::General->autodocList sorts.
+		 -'page' template now properly displays the directory menu.
+		 -'bin/toader-css' now allows editing and getting of the include.
+		 -Add nasty hack to fix returning of dupes by Toader::AutoDoc->findDocs.
+		 -'bin/toader-page' now properly processes the 'rg' action.
+		 -Publish support finalized for entries and pages.
+
 0.2.0	 2012-03-30/06:20
 		 -Add POD backends.
 		 -Minor POD corrections.

@@ -110,6 +110,58 @@ sub list{
 	return @toreturn;
 }
 
+=head2 published
+
+=cut
+
+sub published{
+	my $self=$_[0];
+	my $bool=$_[1];
+
+ 	#blank any previous errors
+	if (!$self->errorblank) {
+		return undef;
+	}
+
+	#set the default
+	if ( ! defined( $bool ) ){
+		$bool='1';
+	}
+
+	#make sure the boolean is definitely zero or one
+	if ( $bool ){
+		$bool='1';
+	}else{
+		$bool='0';
+	}
+
+	my @pages=$self->list;
+	if ( $self->error ){
+		$self->warnString('Failed to list the pages');
+		return undef;
+	}
+	
+	#checks for them all
+	my @published;
+	my $int=0;
+	while ( defined( $pages[$int] ) ){
+		my $page=$self->read( $pages[$int] );
+
+		if ( $self->error ){
+			$self->warnString('Failed to read page "'.$pages[$int].'"');
+		}else{
+			my $ispublished=$page->publishGet;
+			if ( $ispublished eq $bool ){
+				push( @published, $pages[$int] );
+			}
+		}
+
+		$int++;
+	}
+
+	return @published;
+}
+
 =head2 read
 
 This reads a page.

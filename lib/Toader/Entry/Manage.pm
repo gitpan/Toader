@@ -94,6 +94,72 @@ sub list{
 	return @entries;
 }
 
+=head2 published
+
+This returns a list of published or unpublished entries.
+
+One argument is accepted and that is the return value from
+Toader::Entry->publishGet. If that is not defined, then '1'
+is used.
+
+This will throw a warning for entries that can not be read,
+it will not throw a error.
+
+    my @published=$foo->published;
+    if ( $foo->error ){
+        warn( 'Error:'.$foo->error.': '.$foo->errorStrin );
+    }
+
+=cut
+
+sub published{
+	my $self=$_[0];
+	my $bool=$_[1];
+
+ 	#blank any previous errors
+	if (!$self->errorblank) {
+		return undef;
+	}
+
+	#set the default
+	if ( ! defined( $bool ) ){
+		$bool='1';
+	}
+
+	#make sure the boolean is definitely zero or one
+	if ( $bool ){
+		$bool='1';
+	}else{
+		$bool='0';
+	}
+
+	my @entries=$self->list;
+	if ( $self->error ){
+		$self->warnString('Failed to list the entries');
+		return undef;
+	}
+	
+	#checks for them all
+	my @published;
+	my $int=0;
+	while ( defined( $entries[$int] ) ){
+		my $entry=$self->read( $entries[$int] );
+
+		if ( $self->error ){
+			$self->warnString('Failed to read entry "'.$entries[$int].'"');
+		}else{
+			my $ispublished=$entry->publishGet;
+			if ( $ispublished eq $bool ){
+				push( @published, $entries[$int] );
+			}
+		}
+
+		$int++;
+	}
+
+	return @published;
+}
+
 =head2 read
 
 This reads a entry.

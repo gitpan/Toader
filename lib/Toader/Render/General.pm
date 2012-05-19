@@ -819,6 +819,7 @@ sub autodocList{
 		$self->warn;
 		return undef;
 	}
+	@files=sort(@files);
 	
 	#puts together the list of docs
 	my $int=0;
@@ -1412,7 +1413,7 @@ sub entryArchive{
 	}
 
 	#lists the entries for the directory
-	my @entries=$em->list;
+	my @entries=$em->published;
 	if ( $em->error ){
 		$self->{error}=25;
 		$self->{errorString}='Failed to read the entries for "'.$self->{odir}.
@@ -3220,7 +3221,7 @@ The variables passed are as below.
     g - This is a L<Toader::Render::General> object.
     obj - This is the object that Toader was initiated with.
     image - This is the source URL to usse.
-	above - This is the caption above the image.
+    above - This is the caption above the image.
     below - This is the caption below the image.
     link - This is a optional link to link to if the image is clicked on.
     alt - This is the alt text for the image.
@@ -4062,6 +4063,7 @@ sub listDirs{
 			return undef;
 		}
 	}
+	@dirs=sort(@dirs);
 
 	#return black here if there is nothing
 	if ( ! defined( $dirs[0] ) ){
@@ -4687,7 +4689,7 @@ sub pageSummary{
 	}
 
 	#lists the entries for the directory
-	my @pages=$pm->list;
+	my @pages=$pm->published;
 	if ( $pm->error ){
 		$self->{error}=32;
 		$self->{errorString}='Failed to list the pages for "'.$self->{odir}.

@@ -8,10 +8,10 @@ directory.
 The page name can be any thing as long as it does not match
 anything below.
 
-	/\n/
-	/\t/
-	/\//
-	/^ /
+    /\n/
+    /\t/
+    /\//
+    /^ /
     / $/
     /^\./
 
@@ -126,12 +126,12 @@ This creates a summary of all the pages in a directory.
 The template 'page' is filled out using the variables below.
 
     toader - This is the L<Toader> object.
-	g - This is the L<Toader::Render::General> object.
-	self - This is the L<Toader::Render::Page> object.
-	obj - This is the L<Toader::Page> object.
-	c - This is the L<Config::Tiny> object holding the L<Toader> config.
-	locationID - This is the location ID, 'Pages Summary'.
-	content - This the return from summaryContent.
+    g - This is the L<Toader::Render::General> object.
+    self - This is the L<Toader::Render::Page> object.
+    obj - This is the L<Toader::Page> object.
+    c - This is the L<Config::Tiny> object holding the L<Toader> config.
+    locationID - This is the location ID, 'Pages Summary'.
+    content - This the return from summaryContent.
 
 Once it is rendered, it is written to
 $outputDir.'/'.$r2r.'/.pages/summary.html' .

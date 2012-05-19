@@ -51,6 +51,7 @@ sub main::HELP_MESSAGE {
 		"-f <from> - The author's email address.\n".
 		"-F <file> - The file for a part.\n".
 		"-p - Print the returned value for the render check.\n".
+		"-P <publish> - This sets the publish value. Either '0' or '1'.\n".
 		"-r <render> - The render to use.\n".
 		"-s <summary> - What to set for the summary.\n".
 		"-S <summary template> - The template to use for the summary.\n".
@@ -69,10 +70,13 @@ sub main::HELP_MESSAGE {
 		"fg - Gets the author/from.\n".
 		"fs - Sets the author/from.\n".
 		"ls - Lists the entries in the specified directory.\n".
+		"lp - Lists the published entries in the specified directory.\n".
 		"pa - Adds a subpart.\n".
 		"pe - Extracts the subpart.\n".
 		"pl - List the subparts.\n".
 		"pr - Removes a subpart.\n".
+		"pubg - Gets the publish value.".
+		"pubs - Sets the publish value, a boolean value of either '0' or '1'.".
 		"rm - Removes the specified entry.\n".
 		"rp - Prints the raw entry.\n".
 		"summary - Prints a summary.\n".
@@ -100,7 +104,7 @@ sub main::HELP_MESSAGE {
 
 #gets the options
 my %opts=();
-getopts('a:b:e:f:F:r:s:S:t:p', \%opts);
+getopts('a:b:e:f:F:r:s:S:t:pP:', \%opts);
 
 if ( ! defined( $opts{a} ) ){
 	$opts{a}='ls';
@@ -117,6 +121,7 @@ if ( ! defined( $opts{S} ) ){
 #make sure a valid entry is present
 if (
 	( $opts{a} ne 'ls' ) &&
+	( $opts{a} ne 'lp' ) &&
 	( $opts{a} ne 'rm' ) &&
 	( $opts{a} ne 'bs' ) &&
 	( $opts{a} ne 'bg' ) &&
@@ -138,6 +143,8 @@ if (
 	( $opts{a} ne 'pa' ) &&
 	( $opts{a} ne 'pr' ) &&
 	( $opts{a} ne 'pe' ) &&
+	( $opts{a} ne 'pubg' ) &&
+	( $opts{a} ne 'pubs' ) &&
 	( $opts{a} ne 'render' )
 	){
 	warn('toader-entry: No valid action specified');
@@ -273,6 +280,21 @@ if ( $opts{a} eq 'ls' ){
 	my @entries=$emanage->list;
 	if ( $emanage->error  ){
 		warn('toader-entry: Failed to list the entries. error="'.
+			 $emanage->error.'" errorString="'.$emanage->errorString.'"');
+		exit $emanage->error;
+	}
+	if ( ! defined( $entries[0] ) ){
+		exit 0;
+	}
+	print join( "\n", @entries )."\n";
+	exit 0;
+}
+
+#lists a entry
+if ( $opts{a} eq 'lp' ){
+	my @entries=$emanage->published;
+	if ( $emanage->error  ){
+		warn('toader-entry: Failed to list the published entries. error="'.
 			 $emanage->error.'" errorString="'.$emanage->errorString.'"');
 		exit $emanage->error;
 	}
@@ -616,7 +638,49 @@ if ( $opts{a} eq 'pe' ){
 		exit $entry->error;
 	}
 	$entry->write;
+	if ( $entry->error ){
+		warn('toader-entry: Failed to write the entry');
+		exit $entry->error;
+	}
 	exit 0;
+}
+
+#this gets the publish value
+if ( $opts{a} eq 'pubg' ){
+    my $entry=$emanage->read($opts{e});
+    if ( $emanage->error  ){
+        warn('toader-entry: Failed to to read the entry. error="'.
+             $emanage->error.'" errorString="'.$emanage->errorString.'"');
+        exit $emanage->error;
+    }
+	my $publish=$entry->publishGet;
+    if ( $entry->error ){
+        warn('toader-entry: Failed to get the publish value');
+        exit $entry->error;
+    }
+	print $publish."\n";
+    exit 0;
+}
+
+#this sets the publish value
+if ( $opts{a} eq 'pubs' ){
+    my $entry=$emanage->read($opts{e});
+    if ( $emanage->error  ){
+        warn('toader-entry: Failed to to read the entry. error="'.
+             $emanage->error.'" errorString="'.$emanage->errorString.'"');
+        exit $emanage->error;
+    }
+	$entry->publishSet( $opts{P} );
+    if ( $entry->error ){
+        warn('toader-entry: Failed to set the publish value, "'.$opts{P}.'",');
+        exit $entry->error;
+    }
+	$entry->write;
+	if ( $entry->error ){
+		warn('toader-entry: Failed to write the entry');
+		exit $entry->error;
+	}
+    exit 0;
 }
 
 #this renders it

@@ -38,7 +38,7 @@ $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-page 0.0.0\n";
+	print "toader-page 0.0.1\n";
 }
 
 #print help
@@ -51,6 +51,7 @@ sub main::HELP_MESSAGE {
 		"-F <file> - The file for a part.\n".
 		"-n <name> - The name of the page.\n".
 		"-p - Print the returned value for the render check.\n".
+		"-P - The publish value. Either '0' or '1'.\n".
 		"-r <render> - The render to use.\n".
 		"-s <summary> - What to set for the summary.\n".
 		"-S <summary template> - The template to use for the summary.\n".
@@ -69,10 +70,13 @@ sub main::HELP_MESSAGE {
 		"fs - Sets the author/from.\n".
 		"fg - Gets the author/from.\n".
 		"ls - Lists the pages in the specified directory.\n".
+		"lp - Lists the published pages in the specified directory.\n".
 		"pa - Adds a subpart.\n".
 		"pe - Extracts the subpart.\n".
 		"pl - List the subparts.\n".
 		"pr - Removes a subpart.\n".
+		"pubg - Gets the publish value.".
+		"pubs - Sets the publish value, a boolean value of either '0' or '1'.".
 		"rc - Checks if the content of a page can be rendered.\n".
 		"render - Renders the page.\n".
 		"rg - Gets the renderer.\n".
@@ -98,7 +102,7 @@ sub main::HELP_MESSAGE {
 
 #gets the options
 my %opts=();
-getopts('a:b:e:f:F:r:s:S:n:p', \%opts);
+getopts('a:b:e:f:F:r:s:S:n:pP:', \%opts);
 
 if ( ! defined( $opts{a} ) ){
 	$opts{a}='ls';
@@ -115,6 +119,7 @@ if ( ! defined( $opts{S} ) ){
 #make sure a valid action is present
 if (
 	( $opts{a} ne 'ls' ) &&
+	( $opts{a} ne 'lp' ) &&
 	( $opts{a} ne 'rm' ) &&
 	( $opts{a} ne 'bs' ) &&
 	( $opts{a} ne 'bg' ) &&
@@ -136,6 +141,8 @@ if (
 	( $opts{a} ne 'pa' ) &&
 	( $opts{a} ne 'pr' ) &&
 	( $opts{a} ne 'pe' ) &&
+	( $opts{a} ne 'pubg' ) &&
+	( $opts{a} ne 'pubs' ) &&
 	( $opts{a} ne 'render' )
 	){
 	warn('toader-page: No valid action specified');
@@ -269,6 +276,21 @@ if ( $pmanage->error  ){
 #lists the pages
 if ( $opts{a} eq 'ls' ){
 	my @pages=$pmanage->list;
+	if ( $pmanage->error  ){
+		warn('toader-page: Failed to list the pages. error="'.
+			 $pmanage->error.'" errorString="'.$pmanage->errorString.'"');
+		exit $pmanage->error;
+	}
+	if ( ! defined( $pages[0] ) ){
+		exit 0;
+	}
+	print join( "\n", @pages )."\n";
+	exit 0;
+}
+
+#lists the pages
+if ( $opts{a} eq 'lp' ){
+	my @pages=$pmanage->published;
 	if ( $pmanage->error  ){
 		warn('toader-page: Failed to list the pages. error="'.
 			 $pmanage->error.'" errorString="'.$pmanage->errorString.'"');
@@ -474,19 +496,19 @@ if ( $opts{a} eq 'rs' ){
 
 #gets the renderer of a page
 if ( $opts{a} eq 'rg' ){
-    my $page=$pmanage->read($opts{e});
+    my $page=$pmanage->read($opts{n});
     if ( $pmanage->error  ){
         warn('toader-page: Failed to to read the page. error="'.
              $pmanage->error.'" errorString="'.$pmanage->errorString.'"');
         exit $pmanage->error;
     }
-	my $title=$page->rendererGet;
+	my $renderer=$page->rendererGet;
     if ( $page->error  ){
         warn('toader-page: Failed to get the renderer. error="'.
              $page->error.'" errorString="'.$page->errorString.'"');
         exit $page->error;
     }
-	print $title."\n";
+	print $renderer."\n";
 	exit 0;
 }
 
@@ -578,6 +600,44 @@ if ( $opts{a} eq 'pe' ){
 	}
 	$page->write;
 	exit 0;
+}
+
+#this gets the publish value
+if ( $opts{a} eq 'pubg' ){
+    my $page=$pmanage->read($opts{n});
+    if ( $pmanage->error  ){
+        warn('toader-page: Failed to to read the page. error="'.
+             $pmanage->error.'" errorString="'.$pmanage->errorString.'"');
+        exit $pmanage->error;
+    }
+	my $publish=$page->publishGet;
+    if ( $page->error ){
+        warn('toader-page: Failed to get the publish value');
+        exit $page->error;
+    }
+	print $publish."\n";
+    exit 0;
+}
+
+#this sets the publish value
+if ( $opts{a} eq 'pubs' ){
+    my $page=$pmanage->read($opts{n});
+    if ( $pmanage->error  ){
+        warn('toader-page: Failed to to read the page. error="'.
+             $pmanage->error.'" errorString="'.$pmanage->errorString.'"');
+        exit $pmanage->error;
+    }
+	$page->publishSet( $opts{P} );
+    if ( $page->error ){
+        warn('toader-page: Failed to set the publish value, "'.$opts{P}.'",');
+        exit $page->error;
+    }
+	$page->write;
+	if ( $page->error ){
+        warn('toader-page: Failed write the page out');
+        exit $page->error;		
+	}
+    exit 0;
 }
 
 #this renders it

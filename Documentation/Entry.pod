@@ -148,10 +148,10 @@ This creates the content for the archive method.
 This uses the template 'entryArchive' and passes the variables below to it.
 
     toader - This is the L<Toader> object.
-	g - This is the L<Toader::Render::General> object.
-	self - This is the L<Toader::Render::Entry> object.
-	obj - This is the L<Toader::Entry> object.
-	c - This is the L<Config::Tiny> object.
+    g - This is the L<Toader::Render::General> object.
+    self - This is the L<Toader::Render::Entry> object.
+    obj - This is the L<Toader::Entry> object.
+    c - This is the L<Config::Tiny> object.
 
 The default template is as below.
 
@@ -164,10 +164,10 @@ This renders the index page for the '.entries' directory.
 The template used is 'page' and the variables below are passed to it.
 
     toader - This is the L<Toader> object.
-	g - This is the L<Toader::Render::General> object.
-	self - This is the L<Toader::Render::Entry> object.
-	obj - This is the L<Toader::Entry >object.
-	c - This is the L<Config::Tiny> object holding the L<Toader> config.
+    g - This is the L<Toader::Render::General> object.
+    self - This is the L<Toader::Render::Entry> object.
+    obj - This is the L<Toader::Entry >object.
+    c - This is the L<Config::Tiny> object holding the L<Toader> config.
     content - This is the return from the 'indexContent' method.
 
 Once it has been rendered, it is written to 
@@ -180,10 +180,10 @@ This renders the content for the 'index.html' page.
 The template 'entryIndex' is used.
 
     toader - The L<Toader> object.
-	g - The L<Toader::Render::General> object.
-	self - The L<Toader::Render::Entry> object.
-	obj - The L<Toader::Entry> object.
-	c - The L<Config::Tiny> holding the Toader config.
+    g - The L<Toader::Render::General> object.
+    self - The L<Toader::Render::Entry> object.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> holding the Toader config.
 
 The default template is as below.
 

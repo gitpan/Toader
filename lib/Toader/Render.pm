@@ -4,9 +4,6 @@ use warnings;
 use strict;
 use Toader::isaToaderDir;
 use base 'Error::Helper';
-use Toader::Render::Page;
-use Toader::Render::Directory;
-use Toader::Render::Entry;
 
 =head1 NAME
 
@@ -229,39 +226,40 @@ sub renderObj{
 		return undef;
 	}
 
-	my $render;
-	if(ref( $obj ) eq 'Toader::Entry'){
-		$render=Toader::Render::Entry->new({
-			obj=>$obj,
-			toader=>$self->{toader}
-										   });
-	}
-	if(ref( $obj ) eq 'Toader::Page'){
-		$render=Toader::Render::Page->new({
-			obj=>$obj,
-			toader=>$self->{toader}
-										  });
-	}
-	if(ref( $obj ) eq 'Toader::Directory'){
-		$render=Toader::Render::Directory->new({
-			obj=>$obj,
-			toader=>$self->{toader}
-											   });
-	}
-
-	if($render->error){
-		$self->{error}=8;
-		$self->{errorString}='Unable to initialize the render. render="'.ref($obj).'" '.
-			'error="'.$render->error.'" errorString="'.$render->errorString.'"';
+	#gets what object to use for rendering
+	my $renderUsing;
+	my $rendererGet='$renderUsing=$obj->renderUsing;';
+	eval( $rendererGet );
+	if ( ! defined( $renderUsing ) ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to get the renderer to use. obj="'.ref($obj).'"';
 		$self->warn;
 		return undef;
 	}
 
-	$render->render;
-	if($render->error){
+	#initiates the renderer
+	my $renderer;
+	my $rendererInit='use '.$renderUsing.'; $renderer='.$renderUsing.'->new( { obj=>$obj, toader=>$self->{toader} } );';
+	eval( $rendererInit );
+	if ( ! defined( $renderer ) ){
+		$self->{error}=11;
+		$self->{errorString}='Rendering initialize resulted in a undef. init string="'.$rendererInit.'"';
+		$self->warn;
+		return undef;
+	}
+	if($renderer->error){
+		$self->{error}=8;
+		$self->{errorString}='Unable to initialize the renderer. render="'.ref($obj).'" '.
+			'error="'.$renderer->error.'" errorString="'.$renderer->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+	$renderer->render;
+	if($renderer->error){
 		$self->{error}=9;
 		$self->{errorString}='Rendering failed. render="'.ref($obj).'" '.
-			'error="'.$render->error.'" errorString="'.$render->errorString.'"';
+			'error="'.$renderer->error.'" errorString="'.$renderer->errorString.'"';
 		$self->warn;
 		return undef;
 	}
@@ -306,6 +304,14 @@ Unable to initialize the render for the object.
 =head2 9
 
 Rendering failed at rendering the object.
+
+=head2 10
+
+Renderer returned undef.
+
+=head2 11
+
+Attempting to initialize the renderer returned undefined.
 
 =head1 AUTHOR
 

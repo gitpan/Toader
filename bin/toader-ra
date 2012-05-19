@@ -34,12 +34,13 @@ use Toader::Entry::Manage;
 use Toader::AutoDoc;
 use Toader::Render::CSS;
 use Toader::Gallery;
+use Toader::Render::Page;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-ra 0.1.0\n";
+	print "toader-ra 0.1.1\n";
 }
 
 #print help
@@ -133,9 +134,11 @@ while ( defined( $dirs[$int] ) ){
 				 .'". error="'.$gallery->error.'" errorString="'.$gallery->errorString.'"');
 		}else{
 			$render->renderObj( $gallery );
-            warn('toader-ra: Failed to render the gallery for "'.
-                 $dirs[$int].'". error="'.$render->error.
-                 '" errorString="'.$render->errorString.'"');
+			if ( $render->error ){
+				warn('toader-ra: Failed to render the gallery for "'.
+					 $dirs[$int].'". error="'.$render->error.
+					 '" errorString="'.$render->errorString.'"');
+			}
 		}
 	}
 
@@ -148,9 +151,11 @@ while ( defined( $dirs[$int] ) ){
                  .'". error="'.$ad->error.'" errorString="'.$ad->errorString.'"');
         }else{
             $render->renderObj( $ad );
-            warn('toader-ra: Failed to render documentation for "'.
-                 $dirs[$int].'". error="'.$render->error.
-                 '" errorString="'.$render->errorString.'"');
+			if ( $render->error ){
+				warn('toader-ra: Failed to render documentation for "'.
+					 $dirs[$int].'". error="'.$render->error.
+					 '" errorString="'.$render->errorString.'"');
+			}
         }
     }
 
@@ -163,7 +168,7 @@ while ( defined( $dirs[$int] ) ){
 			 .$dir->errorString.'"');
 	}else{
 		#get a list of entries
-		my @entries=$em->list;
+		my @entries=$em->published;
 		if( $em->error ){
 			#prints a warning and continues on`
 			warn('toader-ra: Failed to list the directories for "'.$dirs[$int].
@@ -227,7 +232,7 @@ while ( defined( $dirs[$int] ) ){
 							$er->render;
 						}
 					}					
-
+					
 					$eint++;
 				}
 
@@ -244,7 +249,7 @@ while ( defined( $dirs[$int] ) ){
 			 .$dir->errorString.'"');
 	}else{
 		#gets a list of pages
-		my @pages=$pm->list;
+		my @pages=$pm->published;
 		if ( $pm->error ){
 			warn('toader-ra: Failed to list the pages for "'.
 				 $dirs[$int].'". error="'.$dir->error.'" errorString="'

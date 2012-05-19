@@ -15,11 +15,11 @@ Toader::Page - This provides methods for a named page.
 
 =head1 VERSION
 
-Version 0.0.1
+Version 0.0.2
 
 =cut
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.0.2';
 
 =head1 SYNOPSIS
 
@@ -57,6 +57,13 @@ This is the from address to use.
 =head4 files
 
 This is a list of files that will be made available with this page.
+
+=head4 publish
+
+Wether or not to publish it or not. This is a boolean value and uses "0"
+and "1".
+
+If not specified, it uses "1".
 
     my $foo = Toader::isaToaderDir->new(\%args);
     if ($foo->error){
@@ -105,6 +112,17 @@ sub new{
 
 	if (!defined($args{publish})) {
 		$args{publish}='1';
+	}
+
+	if (
+		( $args{publish} ne "0" ) &&
+		( $args{publish} ne "1" )
+		){
+		$self->{error}=13;
+		$self->{perror}=1;
+		$self->{errorString}='"'.$args{publish}.'" not a published boolean';
+		$self->warn;
+		return $self;
 	}
 
 	#this will hold the various parts
@@ -281,6 +299,19 @@ sub newFromString{
 	#make sure we have publish set
 	if (!defined( $mime->header( "publish" ) )) {
 		$mime->header_set(publish=>'1');
+	}
+
+	#makes sure the publish value is good
+	if (
+		( $mime->header( "publish" ) ne "0" ) &&
+		( $mime->header( "publish" ) ne "1" )
+		){
+		$self->{perror}=1;
+		$self->{error}=13;
+		$self->{errorString}='"'.$mime->header( "publish" ).
+			'" is not a recognized boolean value';
+		$self->warn;
+		return $self;
 	}
 	
 	$self->{mime}=$mime;
@@ -583,7 +614,25 @@ sub publishGet{
 		return undef;
 	}
 
-	return $self->{mime}->header('publish');
+	my $publish=$self->{mime}->header('publish');
+
+	#if not defined, return the default
+	if ( ! defined( $publish ) ){
+		return '1';
+	}
+
+	#make sure it is a recognized boolean value
+	if (
+		( $publish ne '0' ) &&
+		( $publish ne '1' )
+		){
+		$self->{error}=13;
+		$self->{errorString}='Not a recognized boolean value';
+		$self->warn;
+		return undef;
+	}
+
+	return $publish;
 }
 
 =head2 publishSet
@@ -591,6 +640,10 @@ sub publishGet{
 This sets the publish value.
 
 One argument is taken and it is the publish value.
+
+If no value is set, it uses the default, "1".
+
+It must be a recognized boolean value, either "0" or "1".
 
     $foo->publishSet($publish);
     if($foo->error){
@@ -608,14 +661,14 @@ sub publishSet{
 	}
 
 	if (!defined( $publish )) {
-		$publish='0';
+		$publish='1';
 	}
 
 	if (
 		( $publish ne '0' ) &&
 		( $publish ne '1' )
 		){
-		$self->error=19;
+		$self->error=13;
 		$self->errorString='The publish value is not "0" or "1", but "'.$publish.'"';
 		$self->warn;
 		return undef;
@@ -1221,6 +1274,10 @@ No directory has been specified.
 =head2 12
 
 The pages directory could not be created.
+
+=head2 13
+
+The publish value is not a recognized boolean value.
 
 =head1 AUTHOR
 
