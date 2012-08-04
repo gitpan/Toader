@@ -8,6 +8,7 @@ use Toader::Entry::Helper;
 use File::Path qw(make_path);
 use base 'Error::Helper';
 use Toader::pathHelper;
+use Text::Tags::Parser;
 
 =head1 NAME
 
@@ -15,11 +16,11 @@ Toader::Entry - This holds a blog/article/whatever entry.
 
 =head1 VERSION
 
-Version 0.0.3
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.3';
+our $VERSION = '0.1.0';
 
 =head1 SYNOPSIS
 
@@ -63,6 +64,10 @@ The default value is '1'.
 =head4 summary
 
 This is a summary of the entry.
+
+=head4 tags
+
+This is a L<Text::Tags> parsable string for the tags.
 
 =head4 files
 
@@ -207,6 +212,15 @@ sub new{
 
 	}
 
+	#blank the tags value if not defined
+	if ( ! defined( $args{tags} ) ){
+		$args{tags}='';
+	}
+	#clean the tag string
+	my @tags=Text::Tags::Parser->new->parse_tags( $args{tags} );
+	$args{tags}=Text::Tags::Parser->new->join_tags( @tags );
+	
+
 	#creates it
 	my $mime=Email::MIME->create(
 		header=>[
@@ -215,6 +229,7 @@ sub new{
 			summary=>$args{summary},
 			From=>$args{from},
 			publish=>$args{publish},
+			tags=>$args{tags},
 		],
 		body=>$args{body},
 		);
@@ -300,6 +315,17 @@ sub newFromString{
 	}
 
 	#set the summary to blank if one is not specified
+	if (!defined( $mime->header( "summary" ) )) {
+		$mime->header_set(summary=>'');
+	}
+
+	#if there are no tags, make sure it is blank
+	if (!defined( $mime->header( "tags" ) )) {
+		$mime->header_set(tags=>'');
+	}
+	#clean the tags
+	my @tags=Text::Tags::Parser->new->parse_tags( $mime->header("tags") );
+	$mime->header_set( tags=>Text::Tags::Parser->new->join_tags( @tags ) );
 
 	#make sure we have a renderer type
 	if (!defined( $mime->header( "renderer" ) )) {
@@ -1133,6 +1159,125 @@ sub subpartsRemove{
 	$self->{mime}->parts_set( \@newparts );
 
 	return 1;
+}
+
+=head2 tagsGet
+
+Returns a array of tags tags.
+
+The returned value is an array.
+
+    my @tags=$foo->tagsGet;
+    if ( $foo->error ){
+        warn('Error:'.$foo->error.': '.$foo->errorString);
+    }
+
+=cut
+
+sub tagsGet{
+	my $self=$_[0];
+
+	if (!$self->errorblank){
+		return undef;
+	}
+	
+	#if there are no tags, make sure it is blank
+	if (!defined( $self->{mime}->header( "tags" ) )) {
+		$self->{mime}->header_set(tags=>'');
+	}
+	#clean the tags
+	my @tags=Text::Tags::Parser->new->parse_tags( $self->{mime}->header("tags") );
+
+	return @tags;
+}
+
+=head2 tagsGetAsString
+
+This returns the tags as a string.
+
+As long as this object has initiated with
+out issue, then there is no need to do error
+checking for this method.
+
+    my $tagsString=$foo->tagsGetAsString;
+
+=cut
+
+sub tagsGetAsString{
+	my $self=$_[0];
+
+	if (!$self->errorblank){
+		return undef;
+	}
+
+	my $tags=$self->{mime}->header( "tags" );
+
+	if ( ! defined( $tags ) ){
+		$tags='';
+	}
+
+	return $tags;
+}
+
+=head2 tagsSet
+
+This sets the tags.
+
+One value is taken and that is the a array reference.
+
+    $foo->tagsSet( \@tags );
+    if ( $foo->error ){
+        warn('Error:'.$foo->error.': '.$foo->errorString);
+    }
+
+=cut
+
+sub tagsSet{
+	my $self=$_[0];
+	my @tags;
+	if ( defined( $_[1] ) ){
+		@tags=@{ $_[1] };
+	}
+
+	if (!$self->errorblank){
+		return undef;
+	}
+
+	$self->{mime}->header_set( Text::Tags::Parser->new->join_tags( @tags ) );
+	
+	return @tags;
+}
+
+=head2 tagsSetFromString
+
+This sets the tags.
+
+One value is taken and that is a L<Text::Tags> parsable
+string. A value of undef will blank the tags.
+
+    $foo->tagsSetFromString( $tagsString );
+    if ( $foo->error ){
+        warn('Error:'.$foo->error.': '.$foo->errorString);
+    }
+
+=cut
+
+sub tagsSetFromString{
+	my $self=$_[0];
+	my $tagsString=$_[1];
+
+	if (!$self->errorblank){
+		return undef;
+	}
+
+	if ( ! defined( $tagsString ) ){
+		$tagsString='';
+	}
+
+	my @tags=Text::Tags::Parser->new->parse_tags( $tagsString );
+	$self->{mime}->header_set( tags=>Text::Tags::Parser->new->join_tags( @tags ) );
+	
+	return @tags;
 }
 
 =head2 write

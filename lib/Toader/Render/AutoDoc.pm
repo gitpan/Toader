@@ -11,6 +11,7 @@ use Toader::pathHelper;
 use File::Path qw(make_path);
 use Pod::Simple::HTML;
 use File::Copy;
+use Script::isAperlScript;
 
 =head1 NAME
 
@@ -18,11 +19,11 @@ Toader::Render::AutoDoc - This renders a Toader::AutoDoc object.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 =head1 SYNOPSIS
 
@@ -348,12 +349,19 @@ sub render{
 
 		#append .html for POD docs
 		my $ispod=0;
+		my $checker=Script::isAperlScript->new({
+			any=>1,
+			env=>1,
+									  });
         if ( $copyTo =~ /\.[Pp][Oo][Dd]$/ ){
 			$ispod='1';
         }
         if ( $copyTo =~ /\.[Pp][Mm]$/ ){
 			$ispod='1';
         }
+		if ( $checker->isAperlScript( $copyFrom ) ){
+			$ispod='1';
+		}
 
 		#make sure the directory exists
 		my $outputdir=$copyTo;
@@ -372,9 +380,10 @@ sub render{
 		if ( $ispod ){
 			#handles it if it is a pod
 			$copyTo=$copyTo.'.html';
-
+			
 			#convert to HTML from POD
 			my $p2h=Pod::Simple::HTML->new;
+			$p2h->index(1);
 			my $html;
 			$p2h->output_string(\$html);
 			$p2h->parse_file($copyFrom);

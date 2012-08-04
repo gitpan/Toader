@@ -20,8 +20,11 @@ The following headers are should be used.
     Date
     From
     publish
+    tags
 
 'renderer' is the name of the renderer to use.
+
+'tags' is a L<Text::Tags> parsable string.
 
 'title' is the title for the article.
 

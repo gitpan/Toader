@@ -1,5 +1,17 @@
 Revision history for Toader
 
+0.4.0	 2012-08-04/10:00
+		 -Document tags support for entries.
+		 -Actually require some minimum versions in Makefile.PL.
+		 -Now uses Script::isAperlScript for with Toader::AutoDoc.
+		 -For Toader::Render::Genderal->adlink if nothing is specified
+		 	  for the link text, it will remove ".html" from the end.
+		 -Add the methods below to Toader::Entry.
+		 	  tagsGet
+			  tagsGetAsString
+			  tagsSet
+			  tagsSetFromString
+
 0.3.0	 2012-05-19/16:00
 		 -Toader::Render::General->autodocList sorts.
 		 -'page' template now properly displays the directory menu.

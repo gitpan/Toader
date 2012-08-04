@@ -4,6 +4,7 @@ use warnings;
 use strict;
 use base 'Error::Helper';
 use Toader::isaToaderDir;
+use Script::isAperlScript;
 
 =head1 NAME
 
@@ -11,11 +12,11 @@ Toader::AutoDoc - Automatically build documentation from specified directories.
 
 =head1 VERSION
 
-Version 0.0.0
+Version 0.1.0
 
 =cut
 
-our $VERSION = '0.0.0';
+our $VERSION = '0.1.0';
 
 =head1 METHODS
 
@@ -162,6 +163,11 @@ sub findDocs{
 	while( defined( $paths[$int] ) ){
 		my $item=$self->{dir}.'/'.$cp.'/'.$paths[$int];
 
+		my $checker=Script::isAperlScript->new({
+			env=>1,
+			any=>1,
+											   });
+		
 		#processes any files found
 		if ( 
 			( -f $item ) &&
@@ -171,7 +177,8 @@ sub findDocs{
 			 ( $item =~ /\/TODO$/ ) ||
 			 ( $item =~ /\.pm$/ ) ||
 			 ( $item =~ /\.[Pp][Oo][Dd]$/ ) ||
-			 ( $item =~ /\.[Tt][Xx][Tt]$/ )
+			 ( $item =~ /\.[Tt][Xx][Tt]$/ ) ||
+			 ( $checker->isAperlScript( $item ) )
 			 )
 			){
 			push( @toreturn, $cp.'/'.$paths[$int] );

@@ -18,6 +18,7 @@ use Toader::Directory;
 use Email::Address;
 use Toader::AutoDoc;
 use Image::ExifTool;
+use Script::isAperlScript;
 
 =head1 NAME
 
@@ -25,11 +26,11 @@ Toader::Render::General - Renders various general stuff for Toader as well as so
 
 =head1 VERSION
 
-Version 0.2.0
+Version 0.3.0
 
 =cut
 
-our $VERSION = '0.2.0';
+our $VERSION = '0.3.0';
 
 =head1 METHODS
 
@@ -282,6 +283,9 @@ as the object used to initiate this object. The second is file found by
 autodoc. The third is the text for the link, which if left undefined is
 the same as the file.
 
+If the text is left undefined and the file ends in ".html", the ".html"
+part is removed.
+
     $g->cdlink( $directory,  $file, $text );
 
 The template used for this is 'linkDirectory', which by default
@@ -334,6 +338,10 @@ sub adlink{
 		return undef;
 	}
 
+	my $checker=Script::isAperlScript->new({
+		any=>1,
+		env=>1,
+										   });
 	#append .html for POD docs
 	if ( $file =~ /\.[Pp][Oo][Dd]$/ ){
 		$file=$file.'.html';
@@ -341,9 +349,13 @@ sub adlink{
 	if ( $file =~ /\.[Pp][Mm]$/ ){
 		$file=$file.'.html';
 	}
+	if ( $checker->isAperlScript( $self->{dir}.'/'.$file ) ){
+		$file=$file.'.html';
+	}
 
 	if ( ! defined( $txt ) ){
 		$txt=$file;
+		$txt=~s/\.html$//;
 	}
 
 	my $link='';
