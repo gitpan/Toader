@@ -103,7 +103,10 @@ sub new{
         return $self;
     }
 
-	$self->{templates}=Toader::Templates->new( { dir=>$self->{toader}->getRootDir } );
+	$self->{templates}=Toader::Templates->new( { 
+		dir=>$self->{toader}->getRootDir,
+		toader=>$toader,
+											   } );
 
 	return $self;
 }

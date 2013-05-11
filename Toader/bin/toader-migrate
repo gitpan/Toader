@@ -34,7 +34,7 @@ $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-autodoc 0.0.0\n".
+	print "toader-migrate 0.0.1\n".
 		"\n".
 		"Switches:\n".
 		"-a <action>   The action to perform.\n".
@@ -160,3 +160,58 @@ if ( $opts{a} eq 'entry1.0' ){
 	exit 0;
 }
 
+=head1 NAME
+
+toader-migrate - Performs updates to the Toader directory stuff.
+
+=head1 SYNOPSIS
+
+toader-ra -a <action>
+
+=head1 SWITCHES
+
+=head2 -a <action>
+
+This is the action to perform.
+
+=head1 ACTIONS
+
+=head2 entry1.0
+
+Performs the entry migration for the 1.0 version.
+
+=head1 AUTHOR
+
+Copyright (c) 2013, Zame C. Bowers-Hadley <vvelox@vvelox.net>
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS` OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=head1 OSNAMES
+
+unix
+
+=head1 README
+
+toader-migrate - Performs updates to the Toader directory stuff.
+
+=cut

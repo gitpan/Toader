@@ -15,11 +15,11 @@ Toader::Render::Directory - Renders a Toader::Directory object.
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.1.1
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.1.1';
 
 =head1 SYNOPSIS
 
@@ -136,7 +136,10 @@ sub new{
     }
 
 	#initialize this here for simplicity
-	$self->{t}=Toader::Templates->new({ dir=>$self->{obj}->dirGet });
+	$self->{t}=Toader::Templates->new({ 
+		dir=>$self->{obj}->dirGet,
+		toader=>$args{toader},
+									  });
 
     #make sure a directory is set
     if( ! defined( $self->{obj}->dirGet ) ){

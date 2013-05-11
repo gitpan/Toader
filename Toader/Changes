@@ -1,6 +1,11 @@
 Revision history for Toader
 
-1.0.0	 2013-05-11
+1.1.0	 2013-05-11/07:15
+		 -Add 'siderbar' method to 'Toader::Render::General'.
+		 -Correct lots of incorrect initialization.
+		 -Add forgotten docs to  'bin/toader-migrate'
+
+1.0.0	 2013-05-11/04:30
 		 -Add POD for bin/toader-gallery.
 		 -Add bin/toader-migrate for entry migration.
 		 -Add tag support to 'bin/toader-entry'.

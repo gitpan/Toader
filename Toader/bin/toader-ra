@@ -40,7 +40,7 @@ $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 #version function
 sub main::VERSION_MESSAGE {
-	print "toader-ra 0.1.1\n";
+	print "toader-ra 0.1.2\n";
 }
 
 #print help
@@ -78,10 +78,10 @@ if ( $finddirs->error ){
 }
 
 #initates the reusable 
-my $dir=Toader::Directory->new;
-my $pm=Toader::Page::Manage->new;
-my $em=Toader::Entry::Manage->new;
-my $render=Toader::Render->new($toader);
+my $dir=$toader->getDirObj;
+my $pm=Toader::Page::Manage->new( $toader );
+my $em=Toader::Entry::Manage->new( $toader );
+my $render=Toader::Render->new( $toader );
 if ( $render->error ){
 	warn('toader-ra: Failed to initialize the renderer. error="'
 		 .$render->error.'" errorString="'.$render->errorString.'"');
@@ -144,7 +144,7 @@ while ( defined( $dirs[$int] ) ){
 
     #renders the gallery stuff if needed
     if ( -d $dirs[$int].'/.toader/autodoc/'){
-        my $ad=Toader::AutoDoc->new;
+        my $ad=Toader::AutoDoc->new( $toader );
         $ad->dirSet( $dirs[$int] );
         if ( $ad->error ){
             warn('toader-ra: Failed to set the directory for Toader::AutoDoc to "'.$dirs[$int]

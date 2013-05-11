@@ -19,11 +19,11 @@ Toader::Render::AutoDoc - This renders a Toader::AutoDoc object.
 
 =head1 VERSION
 
-Version 0.2.0
+Version 0.2.1
 
 =cut
 
-our $VERSION = '0.2.0';
+our $VERSION = '0.2.1';
 
 =head1 SYNOPSIS
 
@@ -158,7 +158,10 @@ sub new{
 	$self->{dir}=$self->{obj}->dirGet;
 
 	#initialize this here for simplicity
-	$self->{t}=Toader::Templates->new({ dir=>$self->{obj}->dirGet });
+	$self->{t}=Toader::Templates->new({
+		dir=>$self->{obj}->dirGet,
+		toader=>$args{toader},
+									  });
 
 	#initialize the general object here for simplicity
 	$self->{g}=Toader::Render::General->new(

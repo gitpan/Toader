@@ -78,6 +78,7 @@ sub new{
 		$self->warn;
 		return $self;
 	}
+	$self->{toader}=$toader;
 
 	#gets the Toader::VCS object
 	$self->{vcs}=$self->{toader}->getVCS;

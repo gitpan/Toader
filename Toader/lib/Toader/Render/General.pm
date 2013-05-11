@@ -26,11 +26,11 @@ Toader::Render::General - Renders various general stuff for Toader as well as so
 
 =head1 VERSION
 
-Version 0.4.0
+Version 0.5.0
 
 =cut
 
-our $VERSION = '0.4.0';
+our $VERSION = '0.5.0';
 
 =head1 METHODS
 
@@ -306,7 +306,10 @@ sub new{
 	$self->{toFiles}=File::Spec->canonpath( $self->{toFiles} );
 
 	#initiates the Templates object
-	$self->{t}=Toader::Templates->new({ dir=>$self->{dir} });
+	$self->{t}=Toader::Templates->new({ 
+		dir=>$self->{dir},
+		toader=>$args{toader},
+									  });
 	if ( $self->{t}->error ){
 		$self->{perror}=1;
 		$self->{error}=18;
@@ -862,7 +865,14 @@ sub autodocList{
 
 	my $fullpath=$self->{toader}->getRootDir.'/'.$dir;
 
-	my $ad=Toader::AutoDoc->new;
+	my $ad=Toader::AutoDoc->new( $self->{toader} );
+	if ( $ad->error ){
+		$self->{error}=46;
+		$self->{errorString}='Failed to initialize Toader::AutoDoc. error="'.
+			$ad->error.'" errorString="'.$ad->errorString.'"';
+		$self->warn;
+		return undef;
+	}
 
 	$ad->dirSet( $fullpath );
 	if ( $ad->error ){
@@ -1321,7 +1331,7 @@ sub elink{
 	}
 
 	#make sure entry exists... will also make sure it exists
-	my $eh=Toader::Entry::Helper->new;
+	my $eh=Toader::Entry::Helper->new( $self->{toader} );
 	$eh->setDir( $dirtest );
 	if ( ! $eh->entryExists( $entry ) ){
 		$self->{error}=14;
@@ -1461,7 +1471,7 @@ sub entryArchive{
 		return undef;
 	}
 
-	my $em=Toader::Entry::Manage->new();
+	my $em=Toader::Entry::Manage->new( $self->{toader} );
 	$em->setDir( $self->{odir} );
 	if ( $em->error ){
 		$self->{error}=25;
@@ -3226,7 +3236,7 @@ sub hasSubDirs{
 			return undef;
 		}
 	}else{
-		my $dobj=Toader::Directory->new;
+		my $dobj=Toader::Directory->new( $self->{toader} );
 		$dobj->dirSet( $self->{odir} );
 		@dirs=$dobj->listSubToaderDirs;
 		if ( $dobj->error ){
@@ -3728,7 +3738,7 @@ sub lastEntries{
 		$show=15;
 	}
 	
-	my $em=Toader::Entry::Manage->new();
+	my $em=Toader::Entry::Manage->new( $self->{toader} );
 	$em->setDir( $self->{odir} );
 	if ( $em->error ){
 		$self->{error}=25;
@@ -4113,7 +4123,7 @@ sub listDirs{
 			return undef;
 		}
 	}else{
-		my $dobj=Toader::Directory->new;
+		my $dobj=Toader::Directory->new( $self->{toader} );
 		$dobj->dirSet( $self->{odir} );
 		@dirs=$dobj->listSubToaderDirs;
 		if ( $dobj->error ){
@@ -4327,7 +4337,7 @@ sub listPages{
 	}
 
 	#gets a list of pages
-	my $pm=Toader::Page::Manage->new;
+	my $pm=Toader::Page::Manage->new( $self->{toader} );
 	$pm->setDir( $self->{odir} );
 	if ( $pm->error ){
 		$self->{error}=23;
@@ -4737,7 +4747,7 @@ sub pageSummary{
 		return undef;
 	}
 
-	my $pm=Toader::Page::Manage->new();
+	my $pm=Toader::Page::Manage->new( $self->{toader} );
 	$pm->setDir( $self->{odir} );
 	if ( $pm->error ){
 		$self->{error}=31;
@@ -5036,7 +5046,7 @@ sub plink{
 	}
 
 	#make sure entry exists... will also make sure it exists
-	my $ph=Toader::Page::Helper->new;
+	my $ph=Toader::Page::Helper->new( $self->{toader} );
 	$ph->setDir( $dirtest );
 	if ( ! $ph->pageExists( $page ) ){
 		$self->{error}=16;
@@ -5156,6 +5166,106 @@ sub rlink{
 		{
 			url=>$url,
 			text=>$text,
+			toDir=>$self->{toDir},
+			toFiles=>$self->{toFiles},
+			obj=>\$self->{obj},
+			c=>\$self->{toader}->getConfig,
+			self=>\$self,
+			toader=>\$self->{toader},
+			g=>\$self,
+		}
+		);
+	if ( $self->{t}->error ){
+		$self->{error}=10;
+		$self->{errorString}='Failed to fill in the template. error="'.
+			$self->{t}->error.'" errorString="'.$self->{t}->errorString.'"';
+		$self->warn;
+		return undef;
+	}
+
+	return $rendered;
+}
+
+=head2 sidebar
+
+This renders the sidebar for a page.
+
+The template is 'sidebar' and the default is as below.
+
+    [==
+      if ( ! $g->hasEntries ){
+        return "";
+      }
+      return "<h3>Entries</h3>\n".
+        "		".$g->entriesLink." <br>\n".
+        "		".$g->entriesArchiveLink." <br>\n";
+    ==]
+    [==
+      my $pages=$g->listPages;
+      if ( ( ! defined( $pages ) ) || ( $pages eq "" ) ){
+        return "";
+      }
+      return "		<hr><h3>".$g->pageSummaryLink."</h3>\n".$pages."\n		<hr>\n";
+    ==]
+    [==
+      if( $g->hasGallery ){
+        return "<hr>\n<h3>".$g->galleryLink."</h3>";
+      }else{
+        return "";
+      }
+    ==]
+    [==
+      if( $g->hasAnyDirs ){
+          return "<hr>\n<h3>Directories</h3>";
+      }else{
+        return "";
+      }
+    ==]
+    [== 
+      if ( $g->atRoot ){
+        return "";
+      }
+      return $g->rlink("Go To The Root")."		<br>\n		".
+        $g->upOneDirLink."		<br>\n		<br>";
+    ==]
+    
+    [== 
+      if ( $g->hasSubDirs ){
+        return $g->listDirs;
+      }
+      return "";
+    ==]
+    [==
+      if ( $g->hasDocs ){
+        return "<hr>".$g->adListLink;
+      }
+      return "";
+    ==]
+
+The variables are as below.
+
+    toDir - This is the relative back to the directory.
+    toFiles - This is the relative path to the '.files' directory.
+    obj - The L<Toader::Entry> object.
+    c - The L<Config::Tiny> object containing the Toader config.
+    self - The L<Toader::Render::Entry> object.
+    toader - This is a L<Toader> object.
+    g - This is a L<Toader::Render::General> object.
+
+=cut
+
+sub sidebar{
+    my $self=$_[0];
+
+    #blank any previous errors
+    if ( ! $self->errorblank ){
+        return undef;
+    }
+
+	#render it
+	my $rendered=$self->{t}->fill_in(
+		'sidebar',
+		{
 			toDir=>$self->{toDir},
 			toFiles=>$self->{toFiles},
 			obj=>\$self->{obj},
@@ -5503,6 +5613,10 @@ The relative gallery directory contains a period.
 =head2 45, noSrcURLspecified
 
 No source URL specified for L<Toader::Gallery>.
+
+=head2 46, toaderAutoDocInitErrored
+
+Failed to initialize Toader::AutoDoc.
 
 =head1 AUTHOR
 
