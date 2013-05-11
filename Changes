@@ -1,5 +1,8 @@
 Revision history for Toader
 
+1.1.1	 2013-05-11/07:20
+		 -Reupload to CPAN because of a archive error.
+
 1.1.0	 2013-05-11/07:15
 		 -Add 'siderbar' method to 'Toader::Render::General'.
 		 -Correct lots of incorrect initialization.
