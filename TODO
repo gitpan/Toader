@@ -1,6 +1,0 @@
-A list of things to add to Toader.
-
--CGI app integration.
--Automatic adding/removing of Toader files to a VCS.
--Update the flink, upOneDirLink, and autodocList to support fullURL.
--Automatic module selection.
