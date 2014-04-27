@@ -305,6 +305,7 @@ if ( $opts{a} eq 'us' ){
 	exit 0;
 }
 
+warn "No recognized -a action specified\n";
 exit 254;
 
 =head1 NAME
@@ -437,7 +438,7 @@ Updates the scaled images.
 
 =head1 AUTHOR
 
-Copyright (c) 2013, Zame C. Bowers-Hadley <vvelox@vvelox.net>
+Copyright (c) 2014, Zame C. Bowers-Hadley <vvelox@vvelox.net>
 
 All rights reserved.
 

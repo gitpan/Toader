@@ -1,5 +1,9 @@
 Revision history for Toader
 
+1.1.2	 2014-04-2
+		 -'bin/toader-gallery' throws a warning message if nothing is matched the specified action.
+		 -'Toader::Render::Gallery' properly initiliazes 'Toader::Template' now.
+
 1.1.1	 2013-05-11/07:20
 		 -Reupload to CPAN because of a archive error.
 

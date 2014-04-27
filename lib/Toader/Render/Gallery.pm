@@ -155,7 +155,7 @@ sub new{
 	$self->{dir}=$self->{obj}->dirGet;
 
 	#initialize this here for simplicity
-	$self->{t}=Toader::Templates->new({ dir=>$self->{obj}->dirGet });
+	$self->{t}=Toader::Templates->new({ dir=>$self->{obj}->dirGet, toader=>$self->{toader} });
 
 	#initialize the general object here for simplicity
 	$self->{g}=Toader::Render::General->new(
@@ -983,7 +983,7 @@ L<http://search.cpan.org/dist/Toader/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012. Zane C. Bowers-Hadley.
+Copyright 2014. Zane C. Bowers-Hadley.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
